@@ -11,31 +11,23 @@
 
 int value = 10;
 
-int main(int argc, char *argv[])
-{
-      pid_t fork_ret;
+int main(int argc, char *argv[]) {
+  pid_t fork_ret;
 
-	fork_ret = fork();//creating the child process
-	printf("We just cloned a process..!\n");
+  fork_ret = fork();//creating the child process
 
-	if (fork_ret < 0) 
-     {//fork_ret would be -1 if unsuccessful
-		printf(stderr, "Fork Failed\n");
+  if (fork_ret < 0) {//fork_ret would be -1 if unsuccessful
+    printf(stderr, "Fork Failed\n");
+    return 1;
+  } else if (fork_ret == 0) {//fork_ret would return 0 in child
+    value += 10;
+    printf("Child process: value = %d\n", value);
+  } else {
+    printf("We just cloned a process..!\n");
+    wait(NULL); //parent waits until child is completed
+    printf("Child Completed ....\n");
+    printf("Parent process: value = %d\n", value);
+  }
 
-		return 1;
-	}
-	else 
-       if (fork_ret == 0) 
-       {//fork_ret would return 0 in child
-		value += 10;
-		printf("Child process: value = %d\n",value); 
-	  }
-	  else 
-       { 
-		wait(NULL); //parent waits until child is completed
-		printf("Child Completed ....\n");	
-		printf("Parent process: value = %d\n", value);
-	  }
-
-	return 0;
+  return 0;
 }
