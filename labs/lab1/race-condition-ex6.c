@@ -1,0 +1,88 @@
+/*******************************************************************
+* race-condition.c
+* Demonstrates race condition.
+* Compile: gcc -pthread -o race.c race-condition.c
+* Run: ./race
+*******************************************************************/
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define ADD_THREADS  4
+#define SUB_THREADS  4
+
+int global_counter;
+
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+int add_count = 0;
+pthread_cond_t cv;
+
+void *add(void *threadid) {
+  long tid;
+  tid = (long) threadid;
+  pthread_mutex_lock(&lock);
+  global_counter++;
+  printf("add thread #%ld incremented global_counter!\n", tid);
+  add_count++;
+  pthread_mutex_unlock(&lock);
+  if (add_count == ADD_THREADS) pthread_cond_broadcast(&cv);
+  sleep(rand() % 2);
+}
+
+void *sub(void *threadid) {
+  long tid;
+  tid = (long) threadid;
+  pthread_mutex_lock(&lock);
+  while (add_count < ADD_THREADS) pthread_cond_wait(&cv, &lock);
+  global_counter--;
+  printf("sub thread #%ld deducted global_counter! \n", tid);
+  pthread_mutex_unlock(&lock);
+  sleep(rand() % 2);
+}
+
+int main(int argc, char *argv[]) {
+  global_counter = 10;
+  pthread_t add_threads[ADD_THREADS];
+  pthread_t sub_threads[SUB_THREADS];
+  long add_threadid[ADD_THREADS];
+  long sub_threadid[SUB_THREADS];
+  pthread_cond_init(&cv, NULL);
+
+  int rc;
+  long t1, t2;
+  for (t1 = 0; t1 < ADD_THREADS; t1++) {
+    int tid = t1;
+    add_threadid[tid] = tid;
+    printf("main thread: creating add thread %d\n", tid);
+    rc = pthread_create(&add_threads[tid], NULL, add,
+                        (void *) add_threadid[tid]);
+    if (rc) {
+      printf("Return code from pthread_create() is %d\n", rc);
+      exit(-1);
+    }
+  }
+
+  for (t2 = 0; t2 < SUB_THREADS; t2++) {
+    int tid = t2;
+    sub_threadid[tid] = tid;
+    printf("main thead: creating sub thread %d\n", tid);
+    rc = pthread_create(&sub_threads[tid], NULL, sub,
+                        (void *) sub_threadid[tid]);
+    if (rc) {
+      printf("Return code from pthread_create() is %d\n", rc);
+      exit(-1);
+    }
+  }
+
+  int i;
+  for (i=0; i<ADD_THREADS; i++) pthread_join(add_threads[i], NULL);
+  for (i=0; i<SUB_THREADS; i++) pthread_join(sub_threads[i], NULL);
+
+  printf("### global_counter final value = %d ###\n",
+         global_counter);
+  pthread_mutex_destroy(&lock);
+  pthread_cond_destroy(&cv);
+  pthread_exit(NULL);
+
+}
