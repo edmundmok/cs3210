@@ -31,6 +31,7 @@ void *producer(void *threadid) {
 }
 
 void *consumer(void *threadid) {
+  // Assuming only 1 consumer.
   while (consumed < PRODUCERS) {
     pthread_mutex_lock(&m);
     while (consumed >= produced) pthread_cond_wait(&cv, &m);
@@ -77,6 +78,10 @@ int main(int argc, char *argv[]) {
   for (i=0; i<CONSUMERS; i++) pthread_join(consumer_threads[i], NULL);
 
   printf("### consumer_sum final value = %d ###\n", consumer_sum);
+
+  pthread_mutex_destroy(&m);
+  pthread_cond_destroy(&cv);
+
   pthread_exit(NULL);
 
 }
