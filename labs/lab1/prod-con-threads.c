@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define PRODUCERS  2
-#define CONSUMERS  1
-#define MAX_BUFFER_SIZE 10
+#define PRODUCERS  5
+#define CONSUMERS  3
+#define MAX_BUFFER_SIZE 100
 
 int producer_buffer[MAX_BUFFER_SIZE];
 int consumer_sum = 0;
@@ -24,17 +24,22 @@ pthread_cond_t cv;
 void *producer(void *threadid) {
   pthread_mutex_lock(&m);
   int num = (rand() % 10) + 1;
-  printf("producer created %d\n", num);
   producer_buffer[produced++] = num;
   pthread_mutex_unlock(&m);
   pthread_cond_signal(&cv);
 }
 
 void *consumer(void *threadid) {
-  // Assuming only 1 consumer.
-  while (consumed < PRODUCERS) {
+  while (1) {
     pthread_mutex_lock(&m);
-    while (consumed >= produced) pthread_cond_wait(&cv, &m);
+    while (consumed >= produced && consumed < PRODUCERS) {
+      pthread_cond_wait(&cv, &m);
+    }
+    if (consumed >= PRODUCERS) {
+      pthread_mutex_unlock(&m);
+      pthread_cond_signal(&cv);
+      pthread_exit(NULL);
+    }
     consumer_sum += producer_buffer[consumed++];
     pthread_mutex_unlock(&m);
   }
@@ -78,6 +83,11 @@ int main(int argc, char *argv[]) {
   for (i=0; i<CONSUMERS; i++) pthread_join(consumer_threads[i], NULL);
 
   printf("### consumer_sum final value = %d ###\n", consumer_sum);
+
+  int sum=0;
+  for (i=0; i<PRODUCERS; i++) sum += producer_buffer[i];
+
+  printf("### correct consumer_sum final value = %d ###\n", sum);
 
   pthread_mutex_destroy(&m);
   pthread_cond_destroy(&cv);
