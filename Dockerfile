@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
   g++ \
   g++-5 \
   git \
+  htop \
   make \
   man \
   python \

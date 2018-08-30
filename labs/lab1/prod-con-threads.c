@@ -9,8 +9,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define PRODUCERS  5
-#define CONSUMERS  3
+#define PRODUCERS  10
+#define CONSUMERS  10
 #define MAX_BUFFER_SIZE 100
 
 int producer_buffer[MAX_BUFFER_SIZE];
@@ -26,7 +26,8 @@ void *producer(void *threadid) {
   int num = (rand() % 10) + 1;
   producer_buffer[produced++] = num;
   pthread_mutex_unlock(&m);
-  pthread_cond_signal(&cv);
+//  pthread_cond_signal(&cv);   // if use signal here, then might need to manually signal each time on exit
+  pthread_cond_broadcast(&cv);  // if use broadcast here, then don't have to manually signal each time on exit
 }
 
 void *consumer(void *threadid) {
@@ -37,7 +38,7 @@ void *consumer(void *threadid) {
     }
     if (consumed >= PRODUCERS) {
       pthread_mutex_unlock(&m);
-      pthread_cond_signal(&cv);
+//      pthread_cond_signal(&cv); // signal might only wake 1 consumer
       pthread_exit(NULL);
     }
     consumer_sum += producer_buffer[consumed++];
