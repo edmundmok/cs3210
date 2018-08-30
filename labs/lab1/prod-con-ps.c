@@ -97,6 +97,17 @@ int main(int argc, char *argv[]) {
   printf("### consumer_sum final value = %d ###\n", *consumer_sum);
 
   // cleanup shared memory
+  shmdt(consumer_sum);
+  shmctl(cs_shmid, IPC_RMID, 0);
+
+  shmdt(produced);
+  shmctl(p_shmid, IPC_RMID, 0);
+
+  shmdt(consumed);
+  shmctl(c_shmid, IPC_RMID, 0);
+
+  shmdt(producer_buffer);
+  shmctl(b_shmid, IPC_RMID, 0);
 
   // cleanup semaphores
   sem_unlink("mSem");
