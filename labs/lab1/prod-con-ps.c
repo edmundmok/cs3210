@@ -4,6 +4,7 @@
 * Compile: gcc -pthread -o prodcont prod-con-threads.c
 * Run: ./prodcont
 *******************************************************************/
+#include <assert.h>
 #include <errno.h>          /* errno, ECHILD            */
 #include <pthread.h>
 #include <semaphore.h>
@@ -13,9 +14,9 @@
 #include <unistd.h>
 #include <fcntl.h>          /* O_CREAT, O_EXEC          */
 
-#define PRODUCERS  2
-#define CONSUMERS  1
-#define MAX_BUFFER_SIZE 10
+#define PRODUCERS  20
+#define CONSUMERS  12
+#define MAX_BUFFER_SIZE 500
 
 int *producer_buffer; // pointer to an array
 int *consumer_sum;
@@ -24,23 +25,28 @@ sem_t *available;     // counting semaphore, indicate number of consumables
 int *produced;         // next index to produce on
 int *consumed;         // next index to consume from
 
-void *producer() {
+void producer() {
   srand(getpid());
   sem_wait(m);
   int num = (rand() % 10) + 1;
-  printf("producer created %d\n", num);
   producer_buffer[(*produced)++] = num;
   sem_post(m);
   sem_post(available);
 }
 
-void *consumer() {
+void consumer() {
   srand(time(NULL) + 1);
-  // Assumes only 1 consumer.
-  while (*consumed < PRODUCERS) {
+
+  while (1) {
     sem_wait(available);
     sem_wait(m);
-    *consumer_sum += producer_buffer[(*consumed)++];
+    if (*consumed < PRODUCERS)
+      *consumer_sum += producer_buffer[(*consumed)++];
+    if (*consumed >= PRODUCERS) {
+      sem_post(m);
+      sem_post(available);
+      exit(0);
+    }
     sem_post(m);
   }
 }
@@ -95,6 +101,11 @@ int main(int argc, char *argv[]) {
   }
 
   printf("### consumer_sum final value = %d ###\n", *consumer_sum);
+  int i, sum = 0;
+  for (i=0; i<PRODUCERS; i++) sum += producer_buffer[i];
+  printf("### correct sum final value = %d ###\n", sum);
+
+  assert(*consumer_sum == sum);
 
   // cleanup shared memory
   shmdt(consumer_sum);
