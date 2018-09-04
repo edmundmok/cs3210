@@ -1,6 +1,6 @@
 /*******************************************************************
-* prod-con-threads.c
-* Producer Consumer With C
+* prod-con-ps.c
+* Producer Consumer With C (using procs)
 * Compile: gcc -pthread -o prodcont prod-con-threads.c
 * Run: ./prodcont
 *******************************************************************/
