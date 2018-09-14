@@ -8,6 +8,9 @@ RUN apt-get update && apt-get install -y \
   g++-5 \
   git \
   htop \
+  libomp-dev \
+  linux-tools-common \
+  linux-tools-generic \
   make \
   man \
   python \
@@ -16,3 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 # create labs folder
 CMD mkdir /labs
+
+# link perf in linux-tools-generic
+RUN rm /usr/bin/perf
+RUN ln -s /usr/lib/linux-tools/4.4.0-135-generic/perf /usr/bin/perf
