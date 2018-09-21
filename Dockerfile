@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
 
 # create labs folder
 CMD mkdir /labs
+CMD mkdir /assigns
 
 # link perf in linux-tools-generic
 RUN rm /usr/bin/perf
