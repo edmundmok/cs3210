@@ -18,8 +18,7 @@ RUN apt-get update && apt-get install -y \
   vim
 
 # create labs folder
-CMD mkdir /labs
-CMD mkdir /assigns
+CMD mkdir /cs3210
 
 # link perf in linux-tools-generic
 RUN rm /usr/bin/perf
