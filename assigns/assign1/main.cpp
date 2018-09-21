@@ -33,6 +33,10 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
   }
 }
 
+void simulate_train() {
+  return;
+}
+
 void add_trains() {
   return;
 }
@@ -88,6 +92,9 @@ int main() {
   int g = stoi(num_trains[0]),
     y = stoi(num_trains[1]),
     b = stoi(num_trains[1]);
+
+  // Seed for repeatability
+  srand(1);
 
   run_simulation();
 
