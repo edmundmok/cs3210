@@ -33,7 +33,25 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
   }
 }
 
-void run_simulation();
+void add_trains() {
+  return;
+}
+
+void get_positions() {
+  return;
+}
+
+void print_positions() {
+  return;
+}
+
+void run_simulation() {
+  while (1) {
+    add_trains();
+    get_positions();
+    print_positions();
+  }
+}
 
 int main() {
   int S = read_integer_line(cin);
@@ -71,9 +89,7 @@ int main() {
     y = stoi(num_trains[1]),
     b = stoi(num_trains[1]);
 
-  cout << g << ", " << y << ", " << b << endl;
-
-//  run_simulation();
+  run_simulation();
 
   return 0;
 }
