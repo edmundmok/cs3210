@@ -1,42 +1,48 @@
 #include <iostream>
 #include <omp.h>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
-#include <string>
+#include <vector>
 #include <sstream>
 
 
 using namespace std;
 
-void read_stations(unordered_map<string, int>& stations, unordered_set<int>& station_set) {
-  string stations_str;
-  string station;
-  getline(cin, stations_str);
-  stringstream stations_sstream(stations_str);
+int read_integer_line(istream& is) {
+  int n;
+  is >> n;
+  is.ignore(1, '\n');  // remove newline at the end
+  return n;
+}
 
-  while (getline(stations_sstream, station)) {
-    station_set.insert(stations[station]);
+void read_comma_sep_line(istream& is, vector<string>& sep_strs) {
+  string line, temp;
+  getline(is, line);
+  stringstream line_stream(line);
+  while (getline(line_stream, temp, ',')) {
+    sep_strs.push_back(temp);
   }
 }
 
-int main() {
-  int S;
-  cin >> S;
+void read_stations(istream& is, unordered_map<string, int>& stations_map,
+                   unordered_set<int>& station_set) {
+  vector<string> stations;
+  read_comma_sep_line(is, stations);
+  for (string& station: stations) {
+    station_set.insert(stations_map[station]);
+  }
+}
 
-  // Remove extra newline after reading S
-  string station;
-  getline(cin, station);
+void run_simulation();
+
+int main() {
+  int S = read_integer_line(cin);
 
   // Map station name to index number
-  unordered_map<string, int> stations;
-  string stations_str;
-  getline(cin, stations_str);
-  stringstream stations_sstream(stations_str);
-  for (int i=0; i<S; i++) {
-    getline(stations_sstream, station, ',');
-    stations[station] = i;
-  }
+  unordered_map<string, int> stations_map;
+  vector<string> stations;
+  read_comma_sep_line(cin, stations);
+  for (int i=0; i<S; i++) stations_map[stations[i]] = i;
 
   // Setup M
   int M[S][S];
@@ -45,43 +51,29 @@ int main() {
       cin >> M[i][j];
     }
   }
+  cin.ignore(1, '\n');
 
-  getline(cin, station);
-
-  // Setup P
   float P[S];
-  string popularity;
-  string pop_str;
-  getline(cin, pop_str);
-  stringstream pop_sstream(pop_str);
-  for (int i=0; i<S; i++) {
-    getline(pop_sstream, popularity, ',');
-    P[i] = stof(popularity);
-  }
+  vector<string> popularities;
+  read_comma_sep_line(cin, popularities);
+  for (int i=0; i<S; i++) P[i] = stof(popularities[i]);
 
   unordered_set<int> green, yellow, blue;
+  read_stations(cin, stations_map, green);
+  read_stations(cin, stations_map, yellow);
+  read_stations(cin, stations_map, blue);
 
-  read_stations(stations, green);
-  read_stations(stations, yellow);
-  read_stations(stations, blue);
+  int N = read_integer_line(cin);
 
-  int N;
-  cin >> N;
+  vector<string> num_trains;
+  read_comma_sep_line(cin, num_trains);
+  int g = stoi(num_trains[0]),
+    y = stoi(num_trains[1]),
+    b = stoi(num_trains[1]);
 
+  cout << g << ", " << y << ", " << b << endl;
 
-  string num_stations_str;
-  getline(cin, num_stations_str);
-  getline(cin, num_stations_str);
-  stringstream num_stations_sstream(num_stations_str);
+//  run_simulation();
 
-  int g, y, b;
-  string num_station;
-  getline(num_stations_sstream, num_station, ',');
-  g = stof(num_station);
-  getline(num_stations_sstream, num_station, ',');
-  y = stof(num_station);
-  getline(num_stations_sstream, num_station, ',');
-  b = stof(num_station);
-  
   return 0;
 }
