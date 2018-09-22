@@ -60,7 +60,11 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
 }
 
 void simulate_train() {
-  int thread_id = omp_get_thread_num();
+//  int thread_id = omp_get_thread_num();
+  return;
+}
+
+void add_trains(int T, int g, int y, int b) {
   return;
 }
 
@@ -70,13 +74,20 @@ void print_positions() {
 
 void run_simulation(int S) {
 
-  for (T = 0; T < N; T++) {
-    print_positions();
-    #pragma omp parallel for
-    for (int i=0; i<S; i++) {
-      simulate_train();
-    }
+  #pragma omp parallel
+  {
+
   }
+
+//  for (T = 0; T < N; T++) {
+//    add_trains(T, 1, 1, 1);
+//
+////    print_positions();
+////    #pragma omp parallel for
+////    for (int i=0; i<S; i++) {
+////      simulate_train();
+////    }
+//  }
 }
 
 int main() {
