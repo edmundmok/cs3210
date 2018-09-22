@@ -68,6 +68,7 @@ int main() {
 
   // Setup M
   int M[S][S];
+//  omp_lock_t M_lock[S][S];
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> M[i][j];
@@ -96,7 +97,7 @@ int main() {
   // Seed for repeatability
   srand(1);
 
-  run_simulation();
+//  run_simulation();
 
   return 0;
 }
