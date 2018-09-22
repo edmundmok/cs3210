@@ -5,10 +5,28 @@
 #include <vector>
 #include <sstream>
 
+#define INF 999999999
+#define NINF -999999999
+
 
 using namespace std;
 
 int N, T;
+
+struct train_t {
+  string train_id;
+  int *stations;
+  int direction;
+  int station_idx;
+} train_t;
+
+struct station_t {
+  int last_arrival = 0;
+  int total_waiting_time = 0;
+  int num_arrivals = 0;
+  int min_waiting_time = INF;
+  int max_waiting_time = NINF;
+} station_t;
 
 int read_integer_line(istream& is) {
   int n;
@@ -42,15 +60,7 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
 }
 
 void simulate_train() {
-
-  return;
-}
-
-void add_trains() {
-  return;
-}
-
-void get_positions() {
+  int thread_id = omp_get_thread_num();
   return;
 }
 
@@ -58,16 +68,15 @@ void print_positions() {
   return;
 }
 
-void run_simulation() {
-  for (T = 0; T < N; T++) {
-    add_trains();
-  }
+void run_simulation(int S) {
 
-//  while (1) {
-//    add_trains();
-//    get_positions();
-//    print_positions();
-//  }
+  for (T = 0; T < N; T++) {
+    print_positions();
+    #pragma omp parallel for
+    for (int i=0; i<S; i++) {
+      simulate_train();
+    }
+  }
 }
 
 int main() {
@@ -112,6 +121,9 @@ int main() {
 
   // Seed for reproducibility
   srand(1);
+
+  // Assuming this excludes the master thread
+  omp_set_num_threads(g+y+b);
 
 //  run_simulation();
 
