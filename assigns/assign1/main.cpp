@@ -59,6 +59,65 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
   }
 }
 
+void print_vector(vector<int>& v) {
+  for (int e: v) {
+    cout << e << " ";
+  }
+  cout << endl;
+}
+
+bool is_terminal_station(vector<vector<int>>& M, int station_idx,
+                         unordered_set<int>& stations) {
+  int count = 0;
+  for (int i=0; i<M.size(); i++) {
+    if (stations.find(i) != stations.end() && M[station_idx][i] > 0) {
+      count++;
+    }
+    if (count > 1) return false;
+  }
+  return true;
+}
+
+int get_neighbour(vector<vector<int>>& M, int curr,
+                  unordered_set<int>& stations, unordered_set<int>& visited) {
+//  for (int i=0; i<M.size(); i++) {
+//    if (M[curr][i] > 0 && (visited.find(curr) == visited.end())) {
+//      return i;
+//    }
+//  }
+  for (int i=0; i<M.size(); i++) {
+    if ((visited.find(i) == visited.end())
+        && (stations.find(i) != stations.end())
+        && (M[curr][i])) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+void line_up_stations(vector<vector<int>>& M,  unordered_set<int>& stations,
+                      vector<int>& lined_stations) {
+  // first find the starting point
+  int curr = -1;
+  for (int station_idx: stations) {
+    if (is_terminal_station(M, station_idx, stations)) {
+      curr = station_idx;
+      break;
+    }
+  }
+
+  lined_stations.push_back(curr);
+  unordered_set<int> visited = {curr};
+
+  // go down the line from the starting point
+  while (true) {
+    curr = get_neighbour(M, curr, stations, visited);
+    if (curr == -1) return;
+    visited.insert(curr);
+    lined_stations.push_back(curr);
+  }
+}
+
 void simulate_train() {
 //  int thread_id = omp_get_thread_num();
   return;
@@ -95,19 +154,19 @@ int main() {
   get_station_map(cin, stations_map);
 
   // Setup M
-  int M[S][S];
-  omp_lock_t station_lock[S];
-  omp_lock_t M_lock[S][S];
+  vector<vector<int>> M(S, vector<int>(S));
+  vector<omp_lock_t> station_door_lock(S);
+  vector<vector<omp_lock_t>> M_lock(S, vector<omp_lock_t>(S));
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> M[i][j];
       omp_init_lock(&M_lock[i][j]);
     }
-    omp_init_lock(&station_lock[i]);
+    omp_init_lock(&station_door_lock[i]);
   }
   cin.ignore(1, '\n');
 
-  float P[S];
+  vector<float> P(S);
   vector<string> popularities;
   read_comma_sep_line(cin, popularities);
   for (int i=0; i<S; i++) {
@@ -120,6 +179,16 @@ int main() {
   read_stations(cin, stations_map, blue);
 
   vector<int> green_line, yellow_line, blue_line;
+  line_up_stations(M, green, green_line);
+  line_up_stations(M, yellow, yellow_line);
+  line_up_stations(M, blue, blue_line);
+
+//  cout << "green: ";
+//  print_vector(green_line);
+//  cout << "yellow: ";
+//  print_vector(yellow_line);
+//  cout << "blue: ";
+//  print_vector(blue_line);
 
   N = read_integer_line(cin);
 
@@ -141,7 +210,7 @@ int main() {
     for (int j=0; j<S; j++) {
       omp_destroy_lock(&M_lock[i][j]);
     }
-    omp_destroy_lock(&station_lock[i]);
+    omp_destroy_lock(&station_door_lock[i]);
   }
 
   return 0;
