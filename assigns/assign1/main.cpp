@@ -24,6 +24,12 @@ void read_comma_sep_line(istream& is, vector<string>& sep_strs) {
   }
 }
 
+void get_station_map(istream& is, unordered_map<string, int>& station_map) {
+  vector<string> stations;
+  read_comma_sep_line(cin, stations);
+  for (int i=0; i<stations.size(); i++) station_map[stations[i]] = i;
+}
+
 void read_stations(istream& is, unordered_map<string, int>& stations_map,
                    unordered_set<int>& station_set) {
   vector<string> stations;
@@ -62,9 +68,7 @@ int main() {
 
   // Map station name to index number
   unordered_map<string, int> stations_map;
-  vector<string> stations;
-  read_comma_sep_line(cin, stations);
-  for (int i=0; i<S; i++) stations_map[stations[i]] = i;
+  get_station_map(cin, stations_map);
 
   // Setup M
   int M[S][S];
