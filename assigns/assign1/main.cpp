@@ -8,6 +8,8 @@
 
 using namespace std;
 
+int N, T;
+
 int read_integer_line(istream& is) {
   int n;
   is >> n;
@@ -40,6 +42,7 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
 }
 
 void simulate_train() {
+
   return;
 }
 
@@ -56,11 +59,15 @@ void print_positions() {
 }
 
 void run_simulation() {
-  while (1) {
+  for (T = 0; T < N; T++) {
     add_trains();
-    get_positions();
-    print_positions();
   }
+
+//  while (1) {
+//    add_trains();
+//    get_positions();
+//    print_positions();
+//  }
 }
 
 int main() {
@@ -91,7 +98,7 @@ int main() {
   read_stations(cin, stations_map, yellow);
   read_stations(cin, stations_map, blue);
 
-  int N = read_integer_line(cin);
+  N = read_integer_line(cin);
 
   vector<string> num_trains;
   read_comma_sep_line(cin, num_trains);
