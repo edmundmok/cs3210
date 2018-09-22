@@ -72,10 +72,11 @@ int main() {
 
   // Setup M
   int M[S][S];
-//  omp_lock_t M_lock[S][S];
+  omp_lock_t M_lock[S][S];
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> M[i][j];
+      omp_init_lock(&M_lock[i][j]);
     }
   }
   cin.ignore(1, '\n');
@@ -98,10 +99,16 @@ int main() {
     y = stoi(num_trains[1]),
     b = stoi(num_trains[1]);
 
-  // Seed for repeatability
+  // Seed for reproducibility
   srand(1);
 
 //  run_simulation();
+
+  for (int i=0; i<S; i++) {
+    for (int j=0; j<S; j++) {
+      omp_destroy_lock(&M_lock[i][j]);
+    }
+  }
 
   return 0;
 }
