@@ -11,7 +11,7 @@
 
 using namespace std;
 
-int N, T;
+int N;
 
 struct train_t {
   string train_id;
@@ -76,18 +76,15 @@ void run_simulation(int S) {
 
   #pragma omp parallel
   {
+    for (int t=0; t<N; t++) {
+      // t is the current tick
 
+      // simulate_train();
+
+      // wait for all trains to make their moves this tick
+      #pragma omp barrier
+    }
   }
-
-//  for (T = 0; T < N; T++) {
-//    add_trains(T, 1, 1, 1);
-//
-////    print_positions();
-////    #pragma omp parallel for
-////    for (int i=0; i<S; i++) {
-////      simulate_train();
-////    }
-//  }
 }
 
 int main() {
@@ -121,6 +118,8 @@ int main() {
   read_stations(cin, stations_map, green);
   read_stations(cin, stations_map, yellow);
   read_stations(cin, stations_map, blue);
+
+  vector<int> green_line, yellow_line, blue_line;
 
   N = read_integer_line(cin);
 
