@@ -79,19 +79,23 @@ int main() {
 
   // Setup M
   int M[S][S];
+  omp_lock_t station_lock[S];
   omp_lock_t M_lock[S][S];
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> M[i][j];
       omp_init_lock(&M_lock[i][j]);
     }
+    omp_init_lock(&station_lock[i]);
   }
   cin.ignore(1, '\n');
 
   float P[S];
   vector<string> popularities;
   read_comma_sep_line(cin, popularities);
-  for (int i=0; i<S; i++) P[i] = stof(popularities[i]);
+  for (int i=0; i<S; i++) {
+    P[i] = stof(popularities[i]);
+  }
 
   unordered_set<int> green, yellow, blue;
   read_stations(cin, stations_map, green);
@@ -115,6 +119,7 @@ int main() {
     for (int j=0; j<S; j++) {
       omp_destroy_lock(&M_lock[i][j]);
     }
+    omp_destroy_lock(&station_lock[i]);
   }
 
   return 0;
