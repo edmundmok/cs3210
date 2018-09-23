@@ -80,11 +80,6 @@ bool is_terminal_station(vector<vector<int>>& M, int station_idx,
 
 int get_neighbour(vector<vector<int>>& M, int curr,
                   unordered_set<int>& stations, unordered_set<int>& visited) {
-//  for (int i=0; i<M.size(); i++) {
-//    if (M[curr][i] > 0 && (visited.find(curr) == visited.end())) {
-//      return i;
-//    }
-//  }
   for (int i=0; i<M.size(); i++) {
     if ((visited.find(i) == visited.end())
         && (stations.find(i) != stations.end())
@@ -183,12 +178,12 @@ int main() {
   line_up_stations(M, yellow, yellow_line);
   line_up_stations(M, blue, blue_line);
 
-//  cout << "green: ";
-//  print_vector(green_line);
-//  cout << "yellow: ";
-//  print_vector(yellow_line);
-//  cout << "blue: ";
-//  print_vector(blue_line);
+  cout << "green: ";
+  print_vector(green_line);
+  cout << "yellow: ";
+  print_vector(yellow_line);
+  cout << "blue: ";
+  print_vector(blue_line);
 
   N = read_integer_line(cin);
 
