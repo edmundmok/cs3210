@@ -14,8 +14,17 @@ using namespace std;
 
 int N;
 
+struct train_count_t {
+  int g;
+  int y;
+  int b;
+  int total;
+} train_count_t;
+
 struct train_t {
   string train_id;
+  char line;
+  int train_num;
   int *stations;
   int direction;
   int station_idx;
@@ -128,17 +137,25 @@ void add_trains(int T, int g, int y, int b) {
   return;
 }
 
-void run_simulation(int S, int num_trains) {
+void run_simulation(int S, train_count_t train_count) {
 
   // assign trains to thread_ids
-  train_t trains[num_trains];
+  train_t trains[train_count.total];
 
   // assign green line trains
+  for (int i=0; i<train_count.g; i++) {
 
+  }
 
   // assign yellow line trains
+  for (int i=0; i<train_count.y; i++) {
+
+  }
 
   // assign blue line trains
+  for (int i=0; i<train_count.b; i++) {
+
+  }
 
 
   #pragma omp parallel num_threads(num_trains)
