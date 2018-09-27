@@ -46,7 +46,7 @@ struct train_t {
   int train_num;
   vector<station_t> *stations;
   int direction;
-  int station_idx;
+  int local_station_idx;
   int start_time;
 };
 
@@ -121,12 +121,12 @@ void print_train(train_t& train) {
     << " | "
     << "STATION: "
     << "l"
-    << train.station_idx
+    << train.local_station_idx
     << ":"
     << "g"
-    << (*train.stations)[train.station_idx].station_num
+    << (*train.stations)[train.local_station_idx].station_num
     << ":"
-    << (*train.stations)[train.station_idx].station_name
+    << (*train.stations)[train.local_station_idx].station_name
     << " | "
     << "START TIME: "
     << train.start_time
@@ -137,7 +137,18 @@ void print_trains(vector<train_t>& trains) {
   for (train_t& train: trains) {
     print_train(train);
   }
+}
 
+void print_system_state(vector<train_t>& trains, int current_time) {
+  cout << current_time << ": ";
+  for (train_t& train: trains) {
+    if (train.start_time > current_time) continue;
+    cout << train.line << train.train_num
+      << "-s"
+      << (*train.stations)[train.local_station_idx].station_num
+      << ", ";
+  }
+  cout << endl;
 }
 
 bool is_terminal_station(vector<vector<int>>& M, int station_idx,
@@ -222,7 +233,7 @@ void run_simulation(network_t *network) {
       .train_num = i,
       .stations = network->green_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->green_line).size()) - 1,
+      .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->green_line).size()) - 1,
       .start_time = i/2
     };
     trains[j] = train;
@@ -235,7 +246,7 @@ void run_simulation(network_t *network) {
       .train_num = i,
       .stations = network->yellow_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->yellow_line).size()) - 1,
+      .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->yellow_line).size()) - 1,
       .start_time = i/2
     };
     trains[j] = train;
@@ -248,14 +259,14 @@ void run_simulation(network_t *network) {
       .train_num = i,
       .stations = network->blue_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->blue_line).size()) - 1,
+      .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->blue_line).size()) - 1,
       .start_time = i/2
     };
     trains[j] = train;
   }
 
 //    print_train_lines(*network->green_line, *network->yellow_line, *network->blue_line);
-//    print_trains(trains);
+    print_trains(trains);
 
   #pragma omp parallel num_threads(network->train_count->total + 1)
   {
@@ -270,7 +281,6 @@ void run_simulation(network_t *network) {
       if (thread_id != MASTER_THREAD) {
         // wait for all trains to make their moves this tick
         // simulate_train();
-        cout << "train " << train_id << " done!" << endl;
       }
 
       // Let master wait for all trains to make their moves
@@ -279,8 +289,7 @@ void run_simulation(network_t *network) {
       // Let master print out the current state of the system
       #pragma omp master
       {
-        cout << "master done!" << endl;
-//        print_trains(trains);
+        print_system_state(trains, t);
       }
 
       // Let all trains wait for master to print their state
