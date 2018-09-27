@@ -29,10 +29,20 @@ struct train_count_t {
   int total;
 };
 
+struct station_t {
+  int station_num;
+  string station_name = "";
+  int last_arrival = 0;
+  int num_arrivals = 0;
+  int total_waiting_time = 0;
+  int min_waiting_time = INF;
+  int max_waiting_time = NINF;
+};
+
 struct train_t {
   char line;
   int train_num;
-  vector<int> *stations;
+  vector<station_t> *stations;
   int direction;
   int station_idx;
   int start_time;
@@ -40,17 +50,9 @@ struct train_t {
 
 struct network_t {
   train_count_t *train_count;
-  vector<int> *blue_line;
-  vector<int> *yellow_line;
-  vector<int> *green_line;
-};
-
-struct station_t {
-  int last_arrival = 0;
-  int total_waiting_time = 0;
-  int num_arrivals = 0;
-  int min_waiting_time = INF;
-  int max_waiting_time = NINF;
+  vector<station_t> *blue_line;
+  vector<station_t> *yellow_line;
+  vector<station_t> *green_line;
 };
 
 int read_integer_line(istream& is) {
@@ -69,9 +71,8 @@ void read_comma_sep_line(istream& is, vector<string>& sep_strs) {
   }
 }
 
-void get_station_map(istream& is, unordered_map<string, int>& station_map) {
-  vector<string> stations;
-  read_comma_sep_line(cin, stations);
+void get_station_map(istream& is, unordered_map<string, int>& station_map,
+                     vector<string>& stations) {
   for (int i=0; i<stations.size(); i++) station_map[stations[i]] = i;
 }
 
@@ -91,14 +92,22 @@ void print_vector(vector<int>& v) {
   cout << endl;
 }
 
-void print_train_lines(vector<int> &green, vector<int> &yellow,
-                       vector<int> &blue) {
+void print_train_line(vector<station_t>& line) {
+  for (int i=0; i<line.size(); i++) {
+    if (i>0) cout << " - ";
+    cout << line[i].station_num << ":" << line[i].station_name;
+  }
+  cout << endl;
+}
+
+void print_train_lines(vector<station_t> &green, vector<station_t> &yellow,
+                       vector<station_t> &blue) {
   cout << "green: ";
-  print_vector(green);
+  print_train_line(green);
   cout << "yellow: ";
-  print_vector(yellow);
+  print_train_line(yellow);
   cout << "blue: ";
-  print_vector(blue);
+  print_train_line(blue);
 }
 
 void print_train(train_t *train) {
@@ -139,8 +148,9 @@ int get_neighbour(vector<vector<int>>& M, int curr,
   return -1;
 }
 
-void line_up_stations(vector<vector<int>>& M,  unordered_set<int>& stations,
-                      vector<int>& lined_stations) {
+void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
+                      unordered_set<int>& stations,
+                      vector<station_t>& lined_stations) {
   // first find the starting point
   int curr = -1;
   for (int station_idx: stations) {
@@ -150,15 +160,23 @@ void line_up_stations(vector<vector<int>>& M,  unordered_set<int>& stations,
     }
   }
 
-  lined_stations.push_back(curr);
+  station_t first_station = {};
+  first_station.station_num = curr;
+  first_station.station_name = stations_strs[curr];
+
+  lined_stations.push_back(first_station);
   unordered_set<int> visited = {curr};
 
   // go down the line from the starting point
   while (true) {
     curr = get_neighbour(M, curr, stations, visited);
     if (curr == -1) return;
+
+    station_t curr_station = {};
+    curr_station.station_num = curr;
+    curr_station.station_name = stations_strs[curr];
     visited.insert(curr);
-    lined_stations.push_back(curr);
+    lined_stations.push_back(curr_station);
   }
 }
 
@@ -168,10 +186,6 @@ int get_loading_time(int i, vector<float>& popularity) {
 
 void simulate_train() {
 //  int thread_id = omp_get_thread_num();
-  return;
-}
-
-void add_trains(int T, int g, int y, int b) {
   return;
 }
 
@@ -217,9 +231,9 @@ void run_simulation(network_t *network) {
     };
   }
 
-  for (int i=0; i<network->train_count->total; i++) {
-    print_train(&trains[i]);
-  }
+//  for (int i=0; i<network->train_count->total; i++) {
+//    print_train(&trains[i]);
+//  }
 
 //  #pragma omp parallel num_threads(network->train_count->total)
 //  {
@@ -239,7 +253,9 @@ int main() {
 
   // Map station name to index number
   unordered_map<string, int> stations_map;
-  get_station_map(cin, stations_map);
+  vector<string> stations_strs;
+  read_comma_sep_line(cin, stations_strs);
+  get_station_map(cin, stations_map, stations_strs);
 
   // Setup M
   vector<vector<int>> M(S, vector<int>(S));
@@ -266,10 +282,10 @@ int main() {
   read_stations(cin, stations_map, yellow);
   read_stations(cin, stations_map, blue);
 
-  vector<int> green_line, yellow_line, blue_line;
-  line_up_stations(M, green, green_line);
-  line_up_stations(M, yellow, yellow_line);
-  line_up_stations(M, blue, blue_line);
+  vector<station_t> green_line, yellow_line, blue_line;
+  line_up_stations(M, stations_strs, green, green_line);
+  line_up_stations(M, stations_strs, yellow, yellow_line);
+  line_up_stations(M, stations_strs, blue, blue_line);
 
   print_train_lines(green_line, yellow_line, blue_line);
 
