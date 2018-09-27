@@ -170,12 +170,26 @@ void run_simulation(int S, network_t *network) {
 
   // assign yellow line trains
   for (int i=0; i<network->train_count->y; i++, j++) {
-
+    trains[j] = {
+      .line = YELLOW,
+      .train_num = i,
+      .stations = network->yellow_line,
+      .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
+      .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->y - 1,
+      .start_time = i/2
+    };
   }
 
   // assign blue line trains
   for (int i=0; i<network->train_count->b; i++, j++) {
-
+    trains[j] = {
+      .line = BLUE,
+      .train_num = i,
+      .stations = network->blue_line,
+      .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
+      .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->b - 1,
+      .start_time = i/2
+    };
   }
 
 
