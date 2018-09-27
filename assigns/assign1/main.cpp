@@ -208,41 +208,48 @@ void run_simulation(network_t *network) {
   // assign trains to thread_ids
   vector<train_t> trains(network->train_count->total);
 
+  assert ((*network->green_line).size() > 0);
+  assert ((*network->yellow_line).size() > 0);
+  assert ((*network->blue_line).size() > 0);
+
   int j=0;
   // assign green line trains
   for (int i=0; i<network->train_count->g; i++, j++) {
-    trains[j] = {
+    train_t train = {
       .line = GREEN,
       .train_num = i,
       .stations = network->green_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : (*network->green_line).size() - 1,
+      .station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->green_line).size()) - 1,
       .start_time = i/2
     };
+    trains[j] = train;
   }
 
   // assign yellow line trains
   for (int i=0; i<network->train_count->y; i++, j++) {
-    trains[j] = {
+    train_t train = {
       .line = YELLOW,
       .train_num = i,
       .stations = network->yellow_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : (*network->yellow_line).size() - 1,
+      .station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->yellow_line).size()) - 1,
       .start_time = i/2
     };
+    trains[j] = train;
   }
 
   // assign blue line trains
   for (int i=0; i<network->train_count->b; i++, j++) {
-    trains[j] = {
+    train_t train = {
       .line = BLUE,
       .train_num = i,
       .stations = network->blue_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : (*network->blue_line).size() - 1,
+      .station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->blue_line).size()) - 1,
       .start_time = i/2
     };
+    trains[j] = train;
   }
 
   print_trains(trains);
