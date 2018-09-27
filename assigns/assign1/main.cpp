@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <cstdlib>
+#include <iomanip>
 #include <vector>
 #include <string>
 #include <sstream>
@@ -153,6 +154,23 @@ void print_system_state(vector<train_t>& trains, int current_time) {
   cout << endl;
 }
 
+void print_stations_timings(vector<station_t>& line, int total_time) {
+  int total_waiting_time = 0, total_longest_time = 0, total_shortest_time = 0;
+  for (station_t& station: line) {
+    total_waiting_time += station.total_waiting_time;
+    total_longest_time += station.max_waiting_time;
+    total_shortest_time += station.min_waiting_time;
+  }
+  int num_stations = (int) line.size();
+  cout << setprecision(2)
+       << ((float) total_waiting_time) / (total_time * num_stations)
+       << ", "
+       << ((float) total_longest_time) / num_stations
+       << ", "
+       << ((float) total_shortest_time) / num_stations
+       << endl;
+}
+
 bool is_terminal_station(vector<vector<int>>& M, int station_idx,
                          unordered_set<int>& stations) {
   int count = 0;
@@ -295,9 +313,16 @@ void run_simulation(network_t *network) {
       // Let all trains wait for master to print their state
       #pragma omp barrier
     }
-
-
   }
+
+  // Print waiting times
+  cout << "Average waiting times:" << endl;
+  cout << "green: " << network->train_count->g << " trains -> ";
+  print_stations_timings(*network->green_line, N);
+  cout << "yellow: " << network->train_count->y << " trains -> ";
+  print_stations_timings(*network->yellow_line, N);
+  cout << "blue: " << network->train_count->b << " trains -> ";
+  print_stations_timings(*network->blue_line, N);
 }
 
 int main() {
