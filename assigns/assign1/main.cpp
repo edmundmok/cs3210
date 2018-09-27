@@ -55,6 +55,8 @@ struct network_t {
   vector<station_t> *blue_line;
   vector<station_t> *yellow_line;
   vector<station_t> *green_line;
+  vector<float> *station_popularities;
+  vector<vector<int>> *travel_time_matrix;
 };
 
 int read_integer_line(istream& is) {
@@ -211,8 +213,8 @@ int get_loading_time(int i, vector<float>& popularity) {
   return popularity[i] * ((rand() % 10) + 1);
 }
 
-void simulate_train(int train_id) {
-
+void simulate_train(train_t& train, vector<float> *station_popularities,
+                    vector<vector<int>> *travel_time_matrix) {
   return;
 }
 
@@ -276,7 +278,9 @@ void run_simulation(network_t *network) {
       if (thread_id != MASTER_THREAD) {
         // wait for all trains to make their moves this tick
         // but only if it is ready to start
-        if (trains[train_id].start_time <= tick) simulate_train(train_id);
+        if (trains[train_id].start_time <= tick)
+          simulate_train(trains[train_id], network->station_popularities,
+                         network->travel_time_matrix);
       }
 
       // Let master wait for all trains to make their moves
@@ -305,24 +309,24 @@ int main() {
   read_comma_sep_line(cin, stations_strs);
   get_station_map(cin, stations_map, stations_strs);
 
-  // Setup M
-  vector<vector<int>> M(S, vector<int>(S));
+  // Setup travel_time_matrix
+  vector<vector<int>> travel_time_matrix(S, vector<int>(S));
   vector<omp_lock_t> station_door_lock(S);
   vector<vector<omp_lock_t>> M_lock(S, vector<omp_lock_t>(S));
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
-      cin >> M[i][j];
+      cin >> travel_time_matrix[i][j];
       omp_init_lock(&M_lock[i][j]);
     }
     omp_init_lock(&station_door_lock[i]);
   }
   cin.ignore(1, '\n');
 
-  vector<float> popularity(S);
+  vector<float> station_popularities(S);
   vector<string> popularity_strs;
   read_comma_sep_line(cin, popularity_strs);
   for (int i=0; i<S; i++) {
-    popularity[i] = stof(popularity_strs[i]);
+    station_popularities[i] = stof(popularity_strs[i]);
   }
 
   unordered_set<int> green, yellow, blue;
@@ -331,9 +335,9 @@ int main() {
   read_stations(cin, stations_map, blue);
 
   vector<station_t> green_line, yellow_line, blue_line;
-  line_up_stations(M, stations_strs, green, green_line);
-  line_up_stations(M, stations_strs, yellow, yellow_line);
-  line_up_stations(M, stations_strs, blue, blue_line);
+  line_up_stations(travel_time_matrix, stations_strs, green, green_line);
+  line_up_stations(travel_time_matrix, stations_strs, yellow, yellow_line);
+  line_up_stations(travel_time_matrix, stations_strs, blue, blue_line);
 
   N = read_integer_line(cin);
 
@@ -361,6 +365,7 @@ int main() {
     .blue_line = &blue_line,
     .yellow_line = &yellow_line,
     .green_line = &green_line,
+    .station_popularities = &station_popularities
   };
 
   run_simulation(&network);
