@@ -18,6 +18,8 @@
 #define FORWARD 0
 #define BACKWARD 1
 
+#define MASTER_THREAD 0
+
 using namespace std;
 
 int N;
@@ -110,30 +112,30 @@ void print_train_lines(vector<station_t> &green, vector<station_t> &yellow,
   print_train_line(blue);
 }
 
-void print_train(train_t *train) {
+void print_train(train_t& train) {
   cout
-    << string(1, train->line)
-    << train->train_num
+    << string(1, train.line)
+    << train.train_num
     << " | "
-    << ((train->direction == FORWARD) ? "FORWARD" : "BACKWARD")
+    << ((train.direction == FORWARD) ? "FORWARD" : "BACKWARD")
     << " | "
     << "STATION: "
     << "l"
-    << train->station_idx
+    << train.station_idx
     << ":"
     << "g"
-    << (*train->stations)[train->station_idx].station_num
+    << (*train.stations)[train.station_idx].station_num
     << ":"
-    << (*train->stations)[train->station_idx].station_name
+    << (*train.stations)[train.station_idx].station_name
     << " | "
     << "START TIME: "
-    << train->start_time
+    << train.start_time
     << endl;
 }
 
 void print_trains(vector<train_t>& trains) {
   for (train_t& train: trains) {
-    print_train(&train);
+    print_train(train);
   }
 
 }
@@ -252,23 +254,40 @@ void run_simulation(network_t *network) {
     trains[j] = train;
   }
 
-  print_trains(trains);
+//    print_train_lines(*network->green_line, *network->yellow_line, *network->blue_line);
+//    print_trains(trains);
 
-//  for (int i=0; i<network->train_count->total; i++) {
-//    print_train(&trains[i]);
-//  }
+  #pragma omp parallel num_threads(network->train_count->total + 1)
+  {
+    // master will occupy thread_id = 0, so offset all workers by 1
+    int thread_id = omp_get_thread_num();
+    int train_id = thread_id-1;
 
-//  #pragma omp parallel num_threads(network->train_count->total)
-//  {
+    // do some parallel work here
+    if (thread_id != MASTER_THREAD) {
+      cout << "train " << train_id << " done!" << endl;
+    }
+
+    // Let master wait for all trains to make their moves
+    #pragma omp barrier
+
+    // Let master print out the current state of the system
+    #pragma omp master
+    {
+      print_trains(trains);
+    }
+
 //    for (int t=0; t<N; t++) {
 //      // t is the current tick
 //
 //      // simulate_train();
 //
-//      // wait for all trains to make their moves this tick
-//      #pragma omp barrier
+      // wait for all trains to make their moves this tick
+
+    // Let all trains wait for master to print their state
+      #pragma omp barrier
 //    }
-//  }
+  }
 }
 
 int main() {
@@ -309,8 +328,6 @@ int main() {
   line_up_stations(M, stations_strs, green, green_line);
   line_up_stations(M, stations_strs, yellow, yellow_line);
   line_up_stations(M, stations_strs, blue, blue_line);
-
-  print_train_lines(green_line, yellow_line, blue_line);
 
   N = read_integer_line(cin);
 
