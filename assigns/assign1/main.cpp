@@ -4,14 +4,16 @@
 #include <unordered_set>
 #include <cstdlib>
 #include <vector>
+#include <string>
 #include <sstream>
+#include <cassert>
 
 #define INF 999999999
 #define NINF -999999999
 
-#define GREEN 'G'
-#define BLUE 'B'
-#define YELLOW 'Y'
+#define GREEN 'g'
+#define BLUE 'b'
+#define YELLOW 'y'
 
 #define FORWARD 0
 #define BACKWARD 1
@@ -28,7 +30,6 @@ struct train_count_t {
 };
 
 struct train_t {
-//  string& train_id;
   char line;
   int train_num;
   vector<int> *stations;
@@ -50,7 +51,7 @@ struct station_t {
   int num_arrivals = 0;
   int min_waiting_time = INF;
   int max_waiting_time = NINF;
-} station_t;
+};
 
 int read_integer_line(istream& is) {
   int n;
@@ -88,6 +89,20 @@ void print_vector(vector<int>& v) {
     cout << e << " ";
   }
   cout << endl;
+}
+
+void print_train(train_t *train) {
+  cout << string(1, train->line)
+       << train->train_num
+       << " | "
+       << ((train->direction == FORWARD) ? "FORWARD" : "BACKWARD")
+       << " | "
+       << "STATION: "
+       << train->station_idx
+       << " | "
+       << "START TIME: "
+       << train->start_time
+       << endl;
 }
 
 bool is_terminal_station(vector<vector<int>>& M, int station_idx,
@@ -150,7 +165,7 @@ void add_trains(int T, int g, int y, int b) {
   return;
 }
 
-void run_simulation(int S, network_t *network) {
+void run_simulation(network_t *network) {
 
   // assign trains to thread_ids
   train_t trains[network->train_count->total];
@@ -163,7 +178,7 @@ void run_simulation(int S, network_t *network) {
       .train_num = i,
       .stations = network->green_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->g - 1,
+      .station_idx = (i % 2 == FORWARD) ? 0 : (*network->green_line).size() - 1,
       .start_time = i/2
     };
   }
@@ -175,7 +190,7 @@ void run_simulation(int S, network_t *network) {
       .train_num = i,
       .stations = network->yellow_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->y - 1,
+      .station_idx = (i % 2 == FORWARD) ? 0 : (*network->yellow_line).size() - 1,
       .start_time = i/2
     };
   }
@@ -187,23 +202,26 @@ void run_simulation(int S, network_t *network) {
       .train_num = i,
       .stations = network->blue_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->b - 1,
+      .station_idx = (i % 2 == FORWARD) ? 0 : (*network->blue_line).size() - 1,
       .start_time = i/2
     };
   }
 
-
-  #pragma omp parallel num_threads(network->train_count->total)
-  {
-    for (int t=0; t<N; t++) {
-      // t is the current tick
-
-      // simulate_train();
-
-      // wait for all trains to make their moves this tick
-      #pragma omp barrier
-    }
+  for (int i=0; i<network->train_count->total; i++) {
+    print_train(&trains[i]);
   }
+
+//  #pragma omp parallel num_threads(network->train_count->total)
+//  {
+//    for (int t=0; t<N; t++) {
+//      // t is the current tick
+//
+//      // simulate_train();
+//
+//      // wait for all trains to make their moves this tick
+//      #pragma omp barrier
+//    }
+//  }
 }
 
 int main() {
@@ -264,7 +282,21 @@ int main() {
   // Assuming this excludes the master thread
   omp_set_num_threads(g+y+b);
 
-//  run_simulation();
+  train_count_t train_count = {
+    .g = g,
+    .y = y,
+    .b = b,
+    .total = g+y+b
+  };
+
+  network_t network = {
+    .train_count = &train_count,
+    .blue_line = &blue_line,
+    .yellow_line = &yellow_line,
+    .green_line = &green_line,
+  };
+
+  run_simulation(&network);
 
   for (int i=0; i<S; i++) {
     for (int j=0; j<S; j++) {
