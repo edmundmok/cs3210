@@ -31,7 +31,7 @@ struct train_t {
 //  string& train_id;
   char line;
   int train_num;
-//  vector<int>& stations;
+  vector<int> *stations;
   int direction;
   int station_idx;
   int start_time;
@@ -39,9 +39,9 @@ struct train_t {
 
 struct network_t {
   train_count_t *train_count;
-  vector<int>& blue_line;
-  vector<int>& yellow_line;
-  vector<int>& green_line;
+  vector<int> *blue_line;
+  vector<int> *yellow_line;
+  vector<int> *green_line;
 };
 
 struct station_t {
@@ -161,7 +161,7 @@ void run_simulation(int S, network_t *network) {
     trains[j] = {
       .line = GREEN,
       .train_num = i,
-//      .stations = network->green_line,
+      .stations = network->green_line,
       .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
       .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->g - 1,
       .start_time = i/2
