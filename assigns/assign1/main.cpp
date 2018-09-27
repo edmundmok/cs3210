@@ -49,8 +49,8 @@ struct train_t {
   int direction;
   int local_station_idx;
   int start_time;
-//  int travel_remaining_time = 0;  // If 0, means currently at a station.
-//  int load_remaining_time = 0;  // If 0, means doors are closed.
+  int travel_remaining_time;  // If 0, means currently at a station.
+  int load_remaining_time;  // If 0, means doors are closed, and can move if track is ready.
 };
 
 struct network_t {
@@ -247,6 +247,8 @@ train_t prepare_train(vector<station_t> *stations, int i, char line) {
     .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
     .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*stations).size()) - 1,
     .start_time = i/2,
+    .travel_remaining_time = 0,
+    .load_remaining_time = 0
   };
   return train;
 }
