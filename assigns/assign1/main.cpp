@@ -9,6 +9,12 @@
 #define INF 999999999
 #define NINF -999999999
 
+#define GREEN 'G'
+#define BLUE 'B'
+#define YELLOW 'Y'
+
+#define FORWARD 0
+#define BACKWARD 1
 
 using namespace std;
 
@@ -19,17 +25,24 @@ struct train_count_t {
   int y;
   int b;
   int total;
-} train_count_t;
+};
 
 struct train_t {
-  string train_id;
+//  string& train_id;
   char line;
   int train_num;
-  int *stations;
+//  vector<int>& stations;
   int direction;
   int station_idx;
   int start_time;
-} train_t;
+};
+
+struct network_t {
+  train_count_t *train_count;
+  vector<int>& blue_line;
+  vector<int>& yellow_line;
+  vector<int>& green_line;
+};
 
 struct station_t {
   int last_arrival = 0;
@@ -137,28 +150,36 @@ void add_trains(int T, int g, int y, int b) {
   return;
 }
 
-void run_simulation(int S, train_count_t train_count) {
+void run_simulation(int S, network_t *network) {
 
   // assign trains to thread_ids
-  train_t trains[train_count.total];
+  train_t trains[network->train_count->total];
 
+  int j=0;
   // assign green line trains
-  for (int i=0; i<train_count.g; i++) {
-
+  for (int i=0; i<network->train_count->g; i++, j++) {
+    trains[j] = {
+      .line = GREEN,
+      .train_num = i,
+//      .stations = network->green_line,
+      .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
+      .station_idx = (i % 2 == FORWARD) ? 0 : network->train_count->g - 1,
+      .start_time = i/2
+    };
   }
 
   // assign yellow line trains
-  for (int i=0; i<train_count.y; i++) {
+  for (int i=0; i<network->train_count->y; i++, j++) {
 
   }
 
   // assign blue line trains
-  for (int i=0; i<train_count.b; i++) {
+  for (int i=0; i<network->train_count->b; i++, j++) {
 
   }
 
 
-  #pragma omp parallel num_threads(num_trains)
+  #pragma omp parallel num_threads(network->train_count->total)
   {
     for (int t=0; t<N; t++) {
       // t is the current tick
