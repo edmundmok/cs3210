@@ -18,6 +18,7 @@ struct train_t {
   int *stations;
   int direction;
   int station_idx;
+  int start_time;
 } train_t;
 
 struct station_t {
@@ -122,13 +123,20 @@ void add_trains(int T, int g, int y, int b) {
   return;
 }
 
-void print_positions() {
-  return;
-}
+void run_simulation(int S, int num_trains) {
 
-void run_simulation(int S) {
+  // assign trains to thread_ids
+  train_t trains[num_trains];
 
-  #pragma omp parallel
+  // assign green line trains
+  
+
+  // assign yellow line trains
+
+  // assign blue line trains
+
+
+  #pragma omp parallel num_threads(num_trains)
   {
     for (int t=0; t<N; t++) {
       // t is the current tick
