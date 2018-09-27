@@ -49,6 +49,8 @@ struct train_t {
   int direction;
   int local_station_idx;
   int start_time;
+//  int travel_remaining_time = 0;  // If 0, means currently at a station.
+//  int load_remaining_time = 0;  // If 0, means doors are closed.
 };
 
 struct network_t {
@@ -233,7 +235,20 @@ int get_loading_time(int i, vector<float>& popularity) {
 
 void simulate_train(train_t& train, vector<float> *station_popularities,
                     vector<vector<int>> *travel_time_matrix) {
+
   return;
+}
+
+train_t prepare_train(vector<station_t> *stations, int i, char line) {
+  train_t train = {
+    .line = line,
+    .train_num = i,
+    .stations = stations,
+    .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
+    .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*stations).size()) - 1,
+    .start_time = i/2,
+  };
+  return train;
 }
 
 void run_simulation(network_t *network) {
@@ -248,41 +263,17 @@ void run_simulation(network_t *network) {
   int j=0;
   // assign green line trains
   for (int i=0; i<network->train_count->g; i++, j++) {
-    train_t train = {
-      .line = GREEN,
-      .train_num = i,
-      .stations = network->green_line,
-      .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->green_line).size()) - 1,
-      .start_time = i/2
-    };
-    trains[j] = train;
+    trains[j] = prepare_train(network->green_line, i, GREEN);
   }
 
   // assign yellow line trains
   for (int i=0; i<network->train_count->y; i++, j++) {
-    train_t train = {
-      .line = YELLOW,
-      .train_num = i,
-      .stations = network->yellow_line,
-      .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->yellow_line).size()) - 1,
-      .start_time = i/2
-    };
-    trains[j] = train;
+    trains[j] = prepare_train(network->yellow_line, i, YELLOW);
   }
 
   // assign blue line trains
   for (int i=0; i<network->train_count->b; i++, j++) {
-    train_t train = {
-      .line = BLUE,
-      .train_num = i,
-      .stations = network->blue_line,
-      .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-      .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*network->blue_line).size()) - 1,
-      .start_time = i/2
-    };
-    trains[j] = train;
+    trains[j] = prepare_train(network->blue_line, i, BLUE);
   }
 
   #pragma omp parallel num_threads(network->train_count->total + 1)
