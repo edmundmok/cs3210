@@ -111,17 +111,31 @@ void print_train_lines(vector<station_t> &green, vector<station_t> &yellow,
 }
 
 void print_train(train_t *train) {
-  cout << string(1, train->line)
-       << train->train_num
-       << " | "
-       << ((train->direction == FORWARD) ? "FORWARD" : "BACKWARD")
-       << " | "
-       << "STATION: "
-       << train->station_idx
-       << " | "
-       << "START TIME: "
-       << train->start_time
-       << endl;
+  cout
+    << string(1, train->line)
+    << train->train_num
+    << " | "
+    << ((train->direction == FORWARD) ? "FORWARD" : "BACKWARD")
+    << " | "
+    << "STATION: "
+    << "l"
+    << train->station_idx
+    << ":"
+    << "g"
+    << (*train->stations)[train->station_idx].station_num
+    << ":"
+    << (*train->stations)[train->station_idx].station_name
+    << " | "
+    << "START TIME: "
+    << train->start_time
+    << endl;
+}
+
+void print_trains(vector<train_t>& trains) {
+  for (train_t& train: trains) {
+    print_train(&train);
+  }
+
 }
 
 bool is_terminal_station(vector<vector<int>>& M, int station_idx,
@@ -192,7 +206,7 @@ void simulate_train() {
 void run_simulation(network_t *network) {
 
   // assign trains to thread_ids
-  train_t trains[network->train_count->total];
+  vector<train_t> trains(network->train_count->total);
 
   int j=0;
   // assign green line trains
@@ -230,6 +244,8 @@ void run_simulation(network_t *network) {
       .start_time = i/2
     };
   }
+
+  print_trains(trains);
 
 //  for (int i=0; i<network->train_count->total; i++) {
 //    print_train(&trains[i]);
