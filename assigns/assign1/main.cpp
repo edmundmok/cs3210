@@ -271,14 +271,12 @@ void run_simulation(network_t *network) {
     int thread_id = omp_get_thread_num();
     int train_id = thread_id-1;
 
-    for (int current_time=0; current_time<N; current_time++) {
-      // current_time is the current tick
-
+    for (int tick=0; tick<N; tick++) {
       // do some parallel work here
       if (thread_id != MASTER_THREAD) {
         // wait for all trains to make their moves this tick
         // but only if it is ready to start
-        if (trains[train_id].start_time <= current_time) simulate_train(train_id);
+        if (trains[train_id].start_time <= tick) simulate_train(train_id);
       }
 
       // Let master wait for all trains to make their moves
@@ -287,7 +285,7 @@ void run_simulation(network_t *network) {
       // Let master print out the current state of the system
       #pragma omp master
       {
-        print_system_state(trains, current_time);
+        print_system_state(trains, tick);
       }
 
       // Let all trains wait for master to print their state
