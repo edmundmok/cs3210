@@ -332,14 +332,19 @@ int main() {
 
   // Setup travel_time_matrix
   vector<vector<int>> travel_time_matrix(S, vector<int>(S));
-  vector<omp_lock_t> station_door_lock(S);
-  vector<vector<omp_lock_t>> M_lock(S, vector<omp_lock_t>(S));
+  vector<omp_lock_t> door_lock(S);
+  vector<bool> door_in_use(S);
+
+  vector<vector<omp_lock_t>> track_lock(S, vector<omp_lock_t>(S));
+  vector<vector<bool>> track_in_use(S, vector<bool>(S));
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> travel_time_matrix[i][j];
-      omp_init_lock(&M_lock[i][j]);
+      omp_init_lock(&track_lock[i][j]);
+      track_in_use[i][j] = false;
     }
-    omp_init_lock(&station_door_lock[i]);
+    omp_init_lock(&door_lock[i]);
+    door_in_use[i] = false;
   }
   cin.ignore(1, '\n');
 
@@ -393,9 +398,9 @@ int main() {
 
   for (int i=0; i<S; i++) {
     for (int j=0; j<S; j++) {
-      omp_destroy_lock(&M_lock[i][j]);
+      omp_destroy_lock(&track_lock[i][j]);
     }
-    omp_destroy_lock(&station_door_lock[i]);
+    omp_destroy_lock(&door_lock[i]);
   }
 
   return 0;
