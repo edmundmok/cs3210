@@ -263,30 +263,31 @@ void run_simulation(network_t *network) {
     int thread_id = omp_get_thread_num();
     int train_id = thread_id-1;
 
-    // do some parallel work here
-    if (thread_id != MASTER_THREAD) {
-      cout << "train " << train_id << " done!" << endl;
-    }
+    for (int t=0; t<N; t++) {
+      // t is the current tick
 
-    // Let master wait for all trains to make their moves
-    #pragma omp barrier
+      // do some parallel work here
+      if (thread_id != MASTER_THREAD) {
+        // wait for all trains to make their moves this tick
+        // simulate_train();
+        cout << "train " << train_id << " done!" << endl;
+      }
 
-    // Let master print out the current state of the system
-    #pragma omp master
-    {
-      print_trains(trains);
-    }
-
-//    for (int t=0; t<N; t++) {
-//      // t is the current tick
-//
-//      // simulate_train();
-//
-      // wait for all trains to make their moves this tick
-
-    // Let all trains wait for master to print their state
+      // Let master wait for all trains to make their moves
       #pragma omp barrier
-//    }
+
+      // Let master print out the current state of the system
+      #pragma omp master
+      {
+        cout << "master done!" << endl;
+//        print_trains(trains);
+      }
+
+      // Let all trains wait for master to print their state
+      #pragma omp barrier
+    }
+
+
   }
 }
 
