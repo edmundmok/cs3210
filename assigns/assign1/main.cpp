@@ -2,6 +2,7 @@
 #include <omp.h>
 #include <unordered_map>
 #include <unordered_set>
+#include <cstdlib>
 #include <vector>
 #include <sstream>
 
@@ -114,6 +115,10 @@ void line_up_stations(vector<vector<int>>& M,  unordered_set<int>& stations,
   }
 }
 
+int get_loading_time(int i, vector<float>& popularity) {
+  return popularity[i] * ((rand() % 10) + 1);
+}
+
 void simulate_train() {
 //  int thread_id = omp_get_thread_num();
   return;
@@ -129,7 +134,7 @@ void run_simulation(int S, int num_trains) {
   train_t trains[num_trains];
 
   // assign green line trains
-  
+
 
   // assign yellow line trains
 
@@ -169,11 +174,11 @@ int main() {
   }
   cin.ignore(1, '\n');
 
-  vector<float> P(S);
-  vector<string> popularities;
-  read_comma_sep_line(cin, popularities);
+  vector<float> popularity(S);
+  vector<string> popularity_strs;
+  read_comma_sep_line(cin, popularity_strs);
   for (int i=0; i<S; i++) {
-    P[i] = stof(popularities[i]);
+    popularity[i] = stof(popularity_strs[i]);
   }
 
   unordered_set<int> green, yellow, blue;
