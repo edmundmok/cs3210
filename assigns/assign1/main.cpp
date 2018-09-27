@@ -33,7 +33,7 @@ struct train_count_t {
 
 struct station_t {
   int station_num;
-  string station_name = "";
+  string station_name;
   int last_arrival = 0;
   int num_arrivals = 0;
   int total_waiting_time = 0;
@@ -211,8 +211,8 @@ int get_loading_time(int i, vector<float>& popularity) {
   return popularity[i] * ((rand() % 10) + 1);
 }
 
-void simulate_train() {
-//  int thread_id = omp_get_thread_num();
+void simulate_train(int train_id) {
+
   return;
 }
 
@@ -265,22 +265,20 @@ void run_simulation(network_t *network) {
     trains[j] = train;
   }
 
-//    print_train_lines(*network->green_line, *network->yellow_line, *network->blue_line);
-    print_trains(trains);
-
   #pragma omp parallel num_threads(network->train_count->total + 1)
   {
     // master will occupy thread_id = 0, so offset all workers by 1
     int thread_id = omp_get_thread_num();
     int train_id = thread_id-1;
 
-    for (int t=0; t<N; t++) {
-      // t is the current tick
+    for (int current_time=0; current_time<N; current_time++) {
+      // current_time is the current tick
 
       // do some parallel work here
       if (thread_id != MASTER_THREAD) {
         // wait for all trains to make their moves this tick
-        // simulate_train();
+        // but only if it is ready to start
+        if (trains[train_id].start_time <= current_time) simulate_train(train_id);
       }
 
       // Let master wait for all trains to make their moves
@@ -289,7 +287,7 @@ void run_simulation(network_t *network) {
       // Let master print out the current state of the system
       #pragma omp master
       {
-        print_system_state(trains, t);
+        print_system_state(trains, current_time);
       }
 
       // Let all trains wait for master to print their state
