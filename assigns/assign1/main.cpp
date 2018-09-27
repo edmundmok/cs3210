@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <vector>
+#include <math.h>
 #include <string>
 #include <sstream>
 #include <cassert>
@@ -230,12 +231,14 @@ void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
 }
 
 int get_loading_time(int i, vector<float>& popularity) {
-  return popularity[i] * ((rand() % 10) + 1);
+  // use the formula and take ceiling because train must stop for at least
+  // that amount but ticks are integers
+  return ceil(popularity[i] * ((rand() % 10) + 1));
 }
 
 void simulate_train(train_t& train, vector<float> *station_popularities,
                     vector<vector<int>> *travel_time_matrix) {
-
+//  if (train.travel_remaining_time > 0)
   return;
 }
 
