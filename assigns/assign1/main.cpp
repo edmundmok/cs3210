@@ -91,6 +91,16 @@ void print_vector(vector<int>& v) {
   cout << endl;
 }
 
+void print_train_lines(vector<int> &green, vector<int> &yellow,
+                       vector<int> &blue) {
+  cout << "green: ";
+  print_vector(green);
+  cout << "yellow: ";
+  print_vector(yellow);
+  cout << "blue: ";
+  print_vector(blue);
+}
+
 void print_train(train_t *train) {
   cout << string(1, train->line)
        << train->train_num
@@ -261,12 +271,7 @@ int main() {
   line_up_stations(M, yellow, yellow_line);
   line_up_stations(M, blue, blue_line);
 
-  cout << "green: ";
-  print_vector(green_line);
-  cout << "yellow: ";
-  print_vector(yellow_line);
-  cout << "blue: ";
-  print_vector(blue_line);
+  print_train_lines(green_line, yellow_line, blue_line);
 
   N = read_integer_line(cin);
 
