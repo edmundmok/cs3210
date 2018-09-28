@@ -128,6 +128,18 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
             trains[train_id].remaining_time--;
             if (trains[train_id].remaining_time == 0) {
               // doors will close after this tick!
+              #pragma omp critical(station_lock_name)
+              {
+                // remove myself from the old queue since I am done!
+                if (direction == FORWARD) {
+                  assert(station_use[global_station_num].forward_load_q.front() == train_id);
+                  station_use[global_station_num].forward_load_q.pop();
+                } else {
+                  assert(station_use[global_station_num].backward_load_q.front() == train_id);
+                  station_use[global_station_num].backward_load_q.pop();
+                }
+              }
+
               if (trains[train_id].local_station_idx == 0
                   or trains[train_id].local_station_idx == trains[train_id].stations->size()-1) {
                 // check if I am at a terminal, transfer myself to the load
@@ -149,12 +161,12 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                 // otherwise transfer myself to the track queue
                 int curr_station = global_station_num;
                 int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
-                string track_lock_name = TRACK_LOCK_PREFIX + to_string(global_station_num) + string("-") + to_string(next_station);
+                string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
                 trains[train_id].state = MOVE;
 
                 #pragma omp critical(track_lock_name)
                 {
-                  
+                  track_use[curr_station][next_station].track_q.push(train_id);
                 }
 
               }
@@ -164,6 +176,22 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
 
         } else {
           // moving or waiting to move
+          int curr_station = global_station_num;
+          int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
+          string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
+
+          bool should_track = false;
+          #pragma omp critical(track_lock_name)
+          {
+            if (track_use[curr_station][next_station].track_q.front() == train_id and track_use[curr_station][next_station].time < tick) {
+              track_use[curr_station][next_station].time = tick;
+              should_track = true;
+            }
+          }
+
+          if (should_track) {
+            
+          }
         }
       }
 
