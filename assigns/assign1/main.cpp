@@ -163,14 +163,13 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                 int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
                 string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
                 trains[train_id].state = MOVE;
+                trains[train_id].remaining_time = dist_matrix[curr_station][next_station];
 
                 #pragma omp critical(track_lock_name)
                 {
                   track_use[curr_station][next_station].track_q.push(train_id);
                 }
-
               }
-
             }
           }
 
@@ -190,7 +189,31 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
           }
 
           if (should_track) {
-            
+            assert(trains[train_id].remaining_time > 0);
+            trains[train_id].remaining_time--;
+            if (trains[train_id].remaining_time == 0) {
+              // remove myself from the old track queue since I am done!
+              #pragma omp critical(track_lock_name)
+              {
+                assert(track_use[curr_station][next_station].track_q.front() == train_id);
+                track_use[curr_station][next_station].track_q.pop();
+              }
+
+              // I have landed at a station
+              // Enqueue myself into a loading queue
+              trains[train_id].remaining_time = get_loading_time(next_station, station_popularities);
+              trains[train_id].state = LOAD;
+              trains[train_id].local_station_idx = trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1);
+              string station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(next_station);
+              #pragma omp critical(station_lock_name)
+              {
+                if (direction == FORWARD) {
+                  station_use[next_station].forward_load_q.push(train_id);
+                } else {
+                  station_use[next_station].backward_load_q.push(train_id);
+                }
+              }
+            }
           }
         }
       }
