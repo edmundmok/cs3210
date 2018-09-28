@@ -51,13 +51,4 @@ struct train_t {
   int load_remaining_time;  // If 0, means doors are closed, and can move if track is ready.
 };
 
-struct network_t {
-  train_count_t *train_count;
-  vector<station_t> *blue_line;
-  vector<station_t> *yellow_line;
-  vector<station_t> *green_line;
-  vector<float> *station_popularities;
-  vector<vector<int>> *travel_time_matrix;
-};
-
 #endif //ASSIGN1_NETWORK_H

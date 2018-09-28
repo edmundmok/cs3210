@@ -30,18 +30,18 @@ int get_loading_time(int i, vector<float>& popularity) {
   return ceil(popularity[i] * ((rand() % 10) + 1));
 }
 
-void simulate_train(train_t& train, vector<float> *station_popularities,
-                    vector<vector<int>> *travel_time_matrix) {
+void simulate_train(train_t& train, vector<float>& station_popularities,
+                    vector<vector<int>>& travel_time_matrix) {
 //  if (train.travel_remaining_time > 0)
   return;
 }
 
-train_t prepare_train(vector<station_t> *stations, int i, char line) {
-  int station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*stations).size()) - 1;
+train_t prepare_train(vector<station_t>& stations, int i, char line) {
+  int station_idx = (i % 2 == FORWARD) ? 0 : ((int) stations.size()) - 1;
   train_t train = {
     .line = line,
     .train_num = i,
-    .stations = stations,
+    .stations = &stations,
     .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
     .local_station_idx = station_idx,
     .start_time = i/2,
@@ -51,35 +51,38 @@ train_t prepare_train(vector<station_t> *stations, int i, char line) {
   return train;
 }
 
-void run_simulation(int N, network_t *network) {
+void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_line,
+                    vector<station_t>& yellow_line, vector<station_t>& green_line,
+                    vector<float>& station_popularities,
+                    vector<vector<int>>& dist_matrix) {
 
   // assign trains to thread_ids
-  vector<train_t> trains(network->train_count->total);
+  vector<train_t> trains(train_count.total);
 
-  assert ((*network->green_line).size() > 0);
-  assert ((*network->yellow_line).size() > 0);
-  assert ((*network->blue_line).size() > 0);
+  assert (green_line.size() > 0);
+  assert (yellow_line.size() > 0);
+  assert (blue_line.size() > 0);
 
   int j=0;
   // assign green line trains
-  for (int i=0; i<network->train_count->g; i++, j++) {
-    trains[j] = prepare_train(network->green_line, i, GREEN);
-    (*network->green_line)[trains[j].local_station_idx].load_queue.push(&trains[j]);
+  for (int i=0; i<train_count.g; i++, j++) {
+    trains[j] = prepare_train(green_line, i, GREEN);
+    green_line[trains[j].local_station_idx].load_queue.push(&trains[j]);
   }
 
   // assign yellow line trains
-  for (int i=0; i<network->train_count->y; i++, j++) {
-    trains[j] = prepare_train(network->yellow_line, i, YELLOW);
-    (*network->yellow_line)[trains[j].local_station_idx].load_queue.push(&trains[j]);
+  for (int i=0; i<train_count.y; i++, j++) {
+    trains[j] = prepare_train(yellow_line, i, YELLOW);
+    yellow_line[trains[j].local_station_idx].load_queue.push(&trains[j]);
   }
 
   // assign blue line trains
-  for (int i=0; i<network->train_count->b; i++, j++) {
-    trains[j] = prepare_train(network->blue_line, i, BLUE);
-    (*network->blue_line)[trains[j].local_station_idx].load_queue.push(&trains[j]);
+  for (int i=0; i<train_count.b; i++, j++) {
+    trains[j] = prepare_train(blue_line, i, BLUE);
+    blue_line[trains[j].local_station_idx].load_queue.push(&trains[j]);
   }
 
-  #pragma omp parallel num_threads(network->train_count->total + 1)
+  #pragma omp parallel num_threads(train_count.total + 1)
   {
     // master will occupy thread_id = 0, so offset all workers by 1
     int thread_id = omp_get_thread_num();
@@ -91,8 +94,7 @@ void run_simulation(int N, network_t *network) {
         // wait for all trains to make their moves this tick
         // but only if it is ready to start
         if (trains[train_id].start_time <= tick)
-          simulate_train(trains[train_id], network->station_popularities,
-                         network->travel_time_matrix);
+          simulate_train(trains[train_id], station_popularities, dist_matrix);
       }
 
       // Let master wait for all trains to make their moves
@@ -111,12 +113,12 @@ void run_simulation(int N, network_t *network) {
 
   // Print waiting times
   cout << "Average waiting times:" << endl;
-  cout << "green: " << network->train_count->g << " trains -> ";
-  print_stations_timings(*network->green_line, N);
-  cout << "yellow: " << network->train_count->y << " trains -> ";
-  print_stations_timings(*network->yellow_line, N);
-  cout << "blue: " << network->train_count->b << " trains -> ";
-  print_stations_timings(*network->blue_line, N);
+  cout << "green: " << train_count.g << " trains -> ";
+  print_stations_timings(green_line, N);
+  cout << "yellow: " << train_count.y << " trains -> ";
+  print_stations_timings(yellow_line, N);
+  cout << "blue: " << train_count.b << " trains -> ";
+  print_stations_timings(blue_line, N);
 }
 
 int main() {
@@ -182,16 +184,9 @@ int main() {
     .total = g+y+b
   };
 
-  network_t network = {
-    .train_count = &train_count,
-    .blue_line = &blue_line,
-    .yellow_line = &yellow_line,
-    .green_line = &green_line,
-    .station_popularities = &station_popularities
-  };
-
   // Run simulation
-  run_simulation(N, &network);
+  run_simulation(N, train_count, blue_line, yellow_line, green_line,
+                 station_popularities, dist_matrix);
 
   // Destroy locks
   for (int i=0; i<S; i++) {
