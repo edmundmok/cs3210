@@ -98,6 +98,15 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
     int train_id = thread_id-1;
 
     for (int tick=0; tick<N; tick++) {
+      // Let master print out the current state of the system
+      #pragma omp master
+      {
+        print_system_state(trains, tick);
+      }
+
+      // Let master finish before all trains make their moves
+      #pragma omp barrier
+
       // do some parallel work here
       if (thread_id != MASTER_THREAD) {
         // in a train
@@ -218,15 +227,6 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
             }
           }
         }
-      }
-
-      // Let master wait for all trains to make their moves
-      #pragma omp barrier
-
-      // Let master print out the current state of the system
-      #pragma omp master
-      {
-        print_system_state(trains, tick);
       }
 
       // Let all trains wait for master to print their state
