@@ -109,6 +109,7 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
           string station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(global_station_num);
 
           bool should_load = false;
+          cout << train_id << ":" << trains[train_id].state << ":" << trains[train_id].remaining_time << endl;
           // check if allowed to load now
           #pragma omp critical(station_lock_name)
           {
@@ -266,10 +267,7 @@ int main() {
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> dist_matrix[i][j];
-      omp_init_lock(&track_use[i][j].track_lock);
     }
-    omp_init_lock(&station_use[i].forward_load_lock);
-    omp_init_lock(&station_use[i].backward_load_lock);
   }
   cin.ignore(1, '\n');
 
@@ -303,15 +301,6 @@ int main() {
   // Run simulation
   run_simulation(N, train_count, blue_line, yellow_line, green_line,
                  station_popularities, dist_matrix, station_use, track_use);
-
-  // Destroy locks
-  for (int i=0; i<S; i++) {
-    for (int j=0; j<S; j++) {
-      omp_destroy_lock(&track_use[i][j].track_lock);
-    }
-    omp_destroy_lock(&station_use[i].forward_load_lock);
-    omp_destroy_lock(&station_use[i].backward_load_lock);
-  }
 
   return 0;
 }

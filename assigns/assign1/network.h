@@ -39,21 +39,14 @@ struct station_queue_t {
   // Load queues
   queue<int> forward_load_q;
   queue<int> backward_load_q;
-
-  // Queue locks
-  omp_lock_t forward_load_lock;
-  omp_lock_t backward_load_lock;
 };
 
 struct track_queue_t {
-  // Last use times
+  // Last use time
   int time = -1;
 
   // Track queues
   queue<int> track_q;
-
-  // Track locks
-  omp_lock_t track_lock;
 };
 
 struct station_t {
@@ -75,8 +68,6 @@ struct train_t {
   int start_time;
   TrainState state;
   int remaining_time;
-  // If 0, means currently at a station.
-  // If 0, means doors are closed, and can move if track is ready.
 };
 
 #endif //ASSIGN1_NETWORK_H
