@@ -7,6 +7,7 @@
 #include <vector>
 #include <math.h>
 #include <string>
+#include <queue>
 #include <sstream>
 #include <cassert>
 
@@ -28,6 +29,10 @@ using namespace std;
 
 int N;
 
+struct train_count_t;
+struct station_t;
+struct train_t;
+
 struct train_count_t {
   int g;
   int y;
@@ -38,6 +43,7 @@ struct train_count_t {
 struct station_t {
   int station_num;
   string station_name;
+  queue<train_t *> load_queue;
   int last_arrival = UNDEFINED_WAIT;
   int num_arrivals = 0;
   int total_waiting_time = UNDEFINED_WAIT;
@@ -247,12 +253,13 @@ void simulate_train(train_t& train, vector<float> *station_popularities,
 }
 
 train_t prepare_train(vector<station_t> *stations, int i, char line) {
+  int station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*stations).size()) - 1;
   train_t train = {
     .line = line,
     .train_num = i,
     .stations = stations,
     .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-    .local_station_idx = (i % 2 == FORWARD) ? 0 : ((int) (*stations).size()) - 1,
+    .local_station_idx = station_idx,
     .start_time = i/2,
     .travel_remaining_time = 0,
     .load_remaining_time = 0
@@ -273,16 +280,19 @@ void run_simulation(network_t *network) {
   // assign green line trains
   for (int i=0; i<network->train_count->g; i++, j++) {
     trains[j] = prepare_train(network->green_line, i, GREEN);
+    (*network->green_line)[trains[j].local_station_idx].load_queue.push(&trains[j]);
   }
 
   // assign yellow line trains
   for (int i=0; i<network->train_count->y; i++, j++) {
     trains[j] = prepare_train(network->yellow_line, i, YELLOW);
+    (*network->yellow_line)[trains[j].local_station_idx].load_queue.push(&trains[j]);
   }
 
   // assign blue line trains
   for (int i=0; i<network->train_count->b; i++, j++) {
     trains[j] = prepare_train(network->blue_line, i, BLUE);
+    (*network->blue_line)[trains[j].local_station_idx].load_queue.push(&trains[j]);
   }
 
   #pragma omp parallel num_threads(network->train_count->total + 1)
