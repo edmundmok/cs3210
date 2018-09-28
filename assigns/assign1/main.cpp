@@ -109,16 +109,17 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
           string station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(global_station_num);
 
           bool should_load = false;
-          cout << train_id << ":" << trains[train_id].state << ":" << trains[train_id].remaining_time << endl;
           // check if allowed to load now
           #pragma omp critical(station_lock_name)
           {
             if (direction == FORWARD and station_use[global_station_num].forward_load_q.front() == train_id
                 and station_use[global_station_num].forward_time < tick) {
+//              cout << train_id << ":" << trains[train_id].state << ":" << trains[train_id].remaining_time << endl;
               station_use[global_station_num].forward_time = tick;
               should_load = true;
             } else if (direction == BACKWARD and station_use[global_station_num].backward_load_q.front() == train_id
                        and station_use[global_station_num].backward_time < tick) {
+//              cout << train_id << ":" << trains[train_id].state << ":" << trains[train_id].remaining_time << endl;
               station_use[global_station_num].backward_time = tick;
               should_load = true;
             }
@@ -141,8 +142,8 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                 }
               }
 
-              if (trains[train_id].local_station_idx == 0
-                  or trains[train_id].local_station_idx == trains[train_id].stations->size()-1) {
+              if ((trains[train_id].local_station_idx == 0 and direction == BACKWARD)
+                  or (trains[train_id].local_station_idx == trains[train_id].stations->size()-1 and direction == FORWARD)) {
                 // check if I am at a terminal, transfer myself to the load
                 // queue of the other direction of this station
                 trains[train_id].direction = (trains[train_id].direction == FORWARD) ? BACKWARD : FORWARD;
