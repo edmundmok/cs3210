@@ -22,6 +22,8 @@
 
 #define MASTER_THREAD 0
 
+#define UNDEFINED_WAIT -99
+
 using namespace std;
 
 int N;
@@ -36,9 +38,9 @@ struct train_count_t {
 struct station_t {
   int station_num;
   string station_name;
-  int last_arrival = 0;
+  int last_arrival = UNDEFINED_WAIT;
   int num_arrivals = 0;
-  int total_waiting_time = 0;
+  int total_waiting_time = UNDEFINED_WAIT;
   int min_waiting_time = INF;
   int max_waiting_time = NINF;
 };
@@ -167,7 +169,8 @@ void print_stations_timings(vector<station_t>& line, int total_time) {
   }
   int num_stations = (int) line.size();
   cout << setprecision(2)
-       << ((float) total_waiting_time) / (total_time * num_stations)
+       << 0.0
+//       << ((float) total_waiting_time) / (num_stations * )
        << ", "
        << ((float) total_longest_time) / num_stations
        << ", "
