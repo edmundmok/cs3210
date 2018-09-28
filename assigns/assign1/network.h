@@ -51,8 +51,8 @@ struct train_t {
   int start_time;
   TrainState state;
   int remaining_time;
-//  int travel_remaining_time;  // If 0, means currently at a station.
-//  int load_remaining_time;  // If 0, means doors are closed, and can move if track is ready.
+  // If 0, means currently at a station.
+  // If 0, means doors are closed, and can move if track is ready.
 };
 
 #endif //ASSIGN1_NETWORK_H

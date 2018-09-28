@@ -30,12 +30,6 @@ int get_loading_time(int i, vector<float>& popularity) {
   return ceil(popularity[i] * ((rand() % 10) + 1));
 }
 
-void simulate_train(train_t& train, vector<float>& station_popularities,
-                    vector<vector<int>>& travel_time_matrix) {
-//  if (train.travel_remaining_time > 0)
-  return;
-}
-
 train_t prepare_train(vector<station_t>& stations, int i, char line,
                       vector<float>& popularity) {
   int station_idx = (i % 2 == FORWARD) ? 0 : ((int) stations.size()) - 1;
@@ -48,8 +42,6 @@ train_t prepare_train(vector<station_t>& stations, int i, char line,
     .start_time = i/2,
     .state = LOAD,
     .remaining_time = get_loading_time(i, popularity)
-//    .travel_remaining_time = 0,
-//    .load_remaining_time = 0
   };
   return train;
 }
@@ -94,9 +86,13 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
     for (int tick=0; tick<N; tick++) {
       // do some parallel work here
       if (thread_id != MASTER_THREAD) {
-        // wait for all trains to make their moves this tick
-        // but only if it is ready to start
-        simulate_train(trains[train_id], station_popularities, dist_matrix);
+        // in a train
+        if (trains[train_id].state == LOAD) {
+          // check if allowed to load now
+
+        } else {
+          // moving or waiting to move
+        }
       }
 
       // Let master wait for all trains to make their moves
