@@ -49,7 +49,9 @@ train_t prepare_train(vector<station_t>& stations, int i, char line,
 void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_line,
                     vector<station_t>& yellow_line, vector<station_t>& green_line,
                     vector<float>& station_popularities,
-                    vector<vector<int>>& dist_matrix) {
+                    vector<vector<int>>& dist_matrix,
+                    vector<station_queue_t>& station_use,
+                    vector<vector<track_queue_t>>& track_use) {
 
   // assign trains to thread_ids
   vector<train_t> trains(train_count.total);
@@ -62,19 +64,28 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
   // assign green line trains
   for (int i=0; i<train_count.g; i++, j++) {
     trains[j] = prepare_train(green_line, i, GREEN, station_popularities);
-    green_line[trains[j].local_station_idx].load_queue.push(j);
+    if (trains[j].direction == FORWARD)
+      station_use[green_line[trains[j].local_station_idx].station_num].forward_load_q.push(j);
+    else
+      station_use[green_line[trains[j].local_station_idx].station_num].backward_load_q.push(j);
   }
 
   // assign yellow line trains
   for (int i=0; i<train_count.y; i++, j++) {
     trains[j] = prepare_train(yellow_line, i, YELLOW, station_popularities);
-    yellow_line[trains[j].local_station_idx].load_queue.push(j);
+    if (trains[j].direction == FORWARD)
+      station_use[yellow_line[trains[j].local_station_idx].station_num].forward_load_q.push(j);
+    else
+      station_use[yellow_line[trains[j].local_station_idx].station_num].backward_load_q.push(j);
   }
 
   // assign blue line trains
   for (int i=0; i<train_count.b; i++, j++) {
     trains[j] = prepare_train(blue_line, i, BLUE, station_popularities);
-    blue_line[trains[j].local_station_idx].load_queue.push(j);
+    if (trains[j].direction == FORWARD)
+      station_use[blue_line[trains[j].local_station_idx].station_num].forward_load_q.push(j);
+    else
+      station_use[blue_line[trains[j].local_station_idx].station_num].backward_load_q.push(j);
   }
 
   #pragma omp parallel num_threads(train_count.total + 1)
@@ -134,24 +145,19 @@ int main() {
   // setup dist_matrix
   vector<vector<int>> dist_matrix(S, vector<int>(S));
 
-  // Global lock for tracks
-  vector<vector<omp_lock_t>> track_lock(S, vector<omp_lock_t>(S));
-  vector<vector<bool>> track_in_use(S, vector<bool>(S));
+  // Global station lock + queue vector
+  vector<station_queue_t> station_use(S);
 
-  // Global lock for station doors (1 direction per row)
-  vector<vector<omp_lock_t>> door_lock(S, vector<omp_lock_t>(2));
-  vector<vector<bool>> door_in_use(S, vector<bool>(2));
+  // Global track lock + queue vector
+  vector<vector<track_queue_t>> track_use(S, vector<track_queue_t>(S));
 
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> dist_matrix[i][j];
-      omp_init_lock(&track_lock[i][j]);
-      track_in_use[i][j] = false;
+      omp_init_lock(&track_use[i][j].track_lock);
     }
-    omp_init_lock(&door_lock[i][0]);
-    omp_init_lock(&door_lock[i][1]);
-    door_in_use[i][0] = false;
-    door_in_use[i][1] = false;
+    omp_init_lock(&station_use[i].forward_load_lock);
+    omp_init_lock(&station_use[i].backward_load_lock);
   }
   cin.ignore(1, '\n');
 
@@ -184,15 +190,15 @@ int main() {
 
   // Run simulation
   run_simulation(N, train_count, blue_line, yellow_line, green_line,
-                 station_popularities, dist_matrix);
+                 station_popularities, dist_matrix, station_use, track_use);
 
   // Destroy locks
   for (int i=0; i<S; i++) {
     for (int j=0; j<S; j++) {
-      omp_destroy_lock(&track_lock[i][j]);
+      omp_destroy_lock(&track_use[i][j].track_lock);
     }
-    omp_destroy_lock(&door_lock[i][0]);
-    omp_destroy_lock(&door_lock[i][1]);
+    omp_destroy_lock(&station_use[i].forward_load_lock);
+    omp_destroy_lock(&station_use[i].backward_load_lock);
   }
 
   return 0;

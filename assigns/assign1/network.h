@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <queue>
+#include <omp.h>
 
 #define UNDEFINED -99
 
@@ -31,10 +32,27 @@ struct train_count_t {
   int total;
 };
 
+struct station_queue_t {
+  // Load queues
+  queue<int> forward_load_q;
+  queue<int> backward_load_q;
+
+  // Queue locks
+  omp_lock_t forward_load_lock;
+  omp_lock_t backward_load_lock;
+};
+
+struct track_queue_t {
+  // Track queues
+  queue<int> track_q;
+
+  // Track locks
+  omp_lock_t track_lock;
+};
+
 struct station_t {
   int station_num;
   string station_name;
-  queue<int> load_queue;
   int last_arrival = UNDEFINED;
   int num_arrivals = 0;
   int total_waiting_time = UNDEFINED;
