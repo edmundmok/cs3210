@@ -152,6 +152,7 @@ void print_system_state(vector<train_t>& trains, int current_time) {
     cout << train.line << train.train_num
       << "-s"
       << (*train.stations)[train.local_station_idx].station_num
+      // print track here if necessary
       << ", ";
   }
   cout << endl;
