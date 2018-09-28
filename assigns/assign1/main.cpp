@@ -22,6 +22,9 @@
 
 #define MASTER_THREAD 0
 
+#define STATION_LOCK_PREFIX "station_"
+#define TRACK_LOCK_PREFIX "track_"
+
 using namespace std;
 
 int get_loading_time(int i, vector<float>& popularity) {
@@ -41,7 +44,7 @@ train_t prepare_train(vector<station_t>& stations, int i, char line,
     .local_station_idx = station_idx,
     .start_time = i/2,
     .state = LOAD,
-    .remaining_time = get_loading_time(i, popularity)
+    .remaining_time = get_loading_time(stations[station_idx].station_num, popularity)
   };
   return train;
 }
@@ -98,8 +101,66 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
       // do some parallel work here
       if (thread_id != MASTER_THREAD) {
         // in a train
+        int global_station_num = (*trains[train_id].stations)[trains[train_id].local_station_idx].station_num;
+        TrainDirection direction = trains[train_id].direction;
+        string direction_str = (direction == FORWARD) ? "F" : "B";
+
         if (trains[train_id].state == LOAD) {
+          string station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(global_station_num);
+
+          bool should_load = false;
           // check if allowed to load now
+          #pragma omp critical(station_lock_name)
+          {
+            if (direction == FORWARD and station_use[global_station_num].forward_load_q.front() == train_id
+                and station_use[global_station_num].forward_time < tick) {
+              station_use[global_station_num].forward_time = tick;
+              should_load = true;
+            } else if (direction == BACKWARD and station_use[global_station_num].backward_load_q.front() == train_id
+                       and station_use[global_station_num].backward_time < tick) {
+              station_use[global_station_num].backward_time = tick;
+              should_load = true;
+            }
+          }
+
+          if (should_load) {
+            assert(trains[train_id].remaining_time > 0);
+            trains[train_id].remaining_time--;
+            if (trains[train_id].remaining_time == 0) {
+              // doors will close after this tick!
+              if (trains[train_id].local_station_idx == 0
+                  or trains[train_id].local_station_idx == trains[train_id].stations->size()-1) {
+                // check if I am at a terminal, transfer myself to the load
+                // queue of the other direction of this station
+                trains[train_id].direction = (trains[train_id].direction == FORWARD) ? BACKWARD : FORWARD;
+                direction_str = (trains[train_id].direction == FORWARD) ? "F" : "B";
+                station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(global_station_num);
+                #pragma omp critical(station_lock_name)
+                {
+                  if (trains[train_id].direction == FORWARD) {
+                    station_use[global_station_num].forward_load_q.push(train_id);
+                  } else {
+                    station_use[global_station_num].backward_load_q.push(train_id);
+                  }
+                }
+                trains[train_id].remaining_time = get_loading_time(global_station_num, station_popularities);
+
+              } else {
+                // otherwise transfer myself to the track queue
+                int curr_station = global_station_num;
+                int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
+                string track_lock_name = TRACK_LOCK_PREFIX + to_string(global_station_num) + string("-") + to_string(next_station);
+                trains[train_id].state = MOVE;
+
+                #pragma omp critical(track_lock_name)
+                {
+                  
+                }
+
+              }
+
+            }
+          }
 
         } else {
           // moving or waiting to move

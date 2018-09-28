@@ -14,9 +14,6 @@
 #define INF 999999999
 #define NINF -999999999
 
-#define FORWARD 0
-#define BACKWARD 1
-
 using namespace std;
 
 struct train_count_t;
@@ -24,6 +21,8 @@ struct station_t;
 struct train_t;
 
 enum TrainState { LOAD, MOVE };
+
+enum TrainDirection { FORWARD, BACKWARD };
 
 struct train_count_t {
   int g;
@@ -33,6 +32,10 @@ struct train_count_t {
 };
 
 struct station_queue_t {
+  // Last use times
+  int forward_time = -1;
+  int backward_time = -1;
+
   // Load queues
   queue<int> forward_load_q;
   queue<int> backward_load_q;
@@ -43,6 +46,9 @@ struct station_queue_t {
 };
 
 struct track_queue_t {
+  // Last use times
+  int time = -1;
+
   // Track queues
   queue<int> track_q;
 
@@ -64,7 +70,7 @@ struct train_t {
   char line;
   int train_num;
   vector<station_t> *stations;
-  int direction;
+  TrainDirection direction;
   int local_station_idx;
   int start_time;
   TrainState state;
