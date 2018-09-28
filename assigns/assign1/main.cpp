@@ -131,7 +131,8 @@ int main() {
   unordered_map<string, int> stations_map;
   get_station_map(cin, stations_map, stations_strs);
 
-  // Setup dist_matrix
+  // Read adjacency matrix of network and
+  // setup dist_matrix
   vector<vector<int>> dist_matrix(S, vector<int>(S));
   vector<omp_lock_t> door_lock(S);
   vector<bool> door_in_use(S);
@@ -150,11 +151,7 @@ int main() {
   cin.ignore(1, '\n');
 
   vector<float> station_popularities(S);
-  vector<string> popularity_strs;
-  read_comma_sep_line(cin, popularity_strs);
-  for (int i=0; i<S; i++) {
-    station_popularities[i] = stof(popularity_strs[i]);
-  }
+  read_popularities(cin, station_popularities);
 
   unordered_set<int> green, yellow, blue;
   read_stations(cin, stations_map, green);

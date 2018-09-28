@@ -33,4 +33,12 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
   }
 }
 
+void read_popularities(istream& is, vector<float>& popularities) {
+  vector<string> popularity_strs;
+  read_comma_sep_line(cin, popularity_strs);
+  for (int i=0; i<popularity_strs.size(); i++) {
+    popularities[i] = stof(popularity_strs[i]);
+  }
+}
+
 #endif //ASSIGN1_READ_UTILS_H
