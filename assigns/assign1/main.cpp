@@ -133,15 +133,15 @@ int main() {
   // Read adjacency matrix of network and
   // setup dist_matrix
   vector<vector<int>> dist_matrix(S, vector<int>(S));
-  vector<bool> door_in_use(S);
 
   // Global lock for tracks
   vector<vector<omp_lock_t>> track_lock(S, vector<omp_lock_t>(S));
+  vector<vector<bool>> track_in_use(S, vector<bool>(S));
 
   // Global lock for station doors (1 direction per row)
   vector<vector<omp_lock_t>> door_lock(S, vector<omp_lock_t>(2));
+  vector<vector<bool>> door_in_use(S, vector<bool>(2));
 
-  vector<vector<bool>> track_in_use(S, vector<bool>(S));
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> dist_matrix[i][j];
@@ -150,7 +150,8 @@ int main() {
     }
     omp_init_lock(&door_lock[i][0]);
     omp_init_lock(&door_lock[i][1]);
-    door_in_use[i] = false;
+    door_in_use[i][0] = false;
+    door_in_use[i][1] = false;
   }
   cin.ignore(1, '\n');
 
