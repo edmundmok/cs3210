@@ -198,8 +198,8 @@ int main() {
   read_comma_sep_line(cin, stations_strs);
   get_station_map(cin, stations_map, stations_strs);
 
-  // Setup travel_time_matrix
-  vector<vector<int>> travel_time_matrix(S, vector<int>(S));
+  // Setup dist_matrix
+  vector<vector<int>> dist_matrix(S, vector<int>(S));
   vector<omp_lock_t> door_lock(S);
   vector<bool> door_in_use(S);
 
@@ -207,7 +207,7 @@ int main() {
   vector<vector<bool>> track_in_use(S, vector<bool>(S));
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
-      cin >> travel_time_matrix[i][j];
+      cin >> dist_matrix[i][j];
       omp_init_lock(&track_lock[i][j]);
       track_in_use[i][j] = false;
     }
@@ -229,9 +229,9 @@ int main() {
   read_stations(cin, stations_map, blue);
 
   vector<station_t> green_line, yellow_line, blue_line;
-  line_up_stations(travel_time_matrix, stations_strs, green, green_line);
-  line_up_stations(travel_time_matrix, stations_strs, yellow, yellow_line);
-  line_up_stations(travel_time_matrix, stations_strs, blue, blue_line);
+  line_up_stations(dist_matrix, stations_strs, green, green_line);
+  line_up_stations(dist_matrix, stations_strs, yellow, yellow_line);
+  line_up_stations(dist_matrix, stations_strs, blue, blue_line);
 
   int N = read_integer_line(cin);
 
