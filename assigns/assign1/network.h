@@ -22,6 +22,8 @@ struct train_count_t;
 struct station_t;
 struct train_t;
 
+enum TrainState { LOAD, MOVE };
+
 struct train_count_t {
   int g;
   int y;
@@ -32,7 +34,7 @@ struct train_count_t {
 struct station_t {
   int station_num;
   string station_name;
-  queue<train_t *> load_queue;
+  queue<int> load_queue;
   int last_arrival = UNDEFINED;
   int num_arrivals = 0;
   int total_waiting_time = UNDEFINED;
@@ -47,8 +49,10 @@ struct train_t {
   int direction;
   int local_station_idx;
   int start_time;
-  int travel_remaining_time;  // If 0, means currently at a station.
-  int load_remaining_time;  // If 0, means doors are closed, and can move if track is ready.
+  TrainState state;
+  int remaining_time;
+//  int travel_remaining_time;  // If 0, means currently at a station.
+//  int load_remaining_time;  // If 0, means doors are closed, and can move if track is ready.
 };
 
 #endif //ASSIGN1_NETWORK_H
