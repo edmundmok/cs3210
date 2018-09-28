@@ -162,9 +162,7 @@ int main() {
 
   vector<string> num_trains;
   read_comma_sep_line(cin, num_trains);
-  int g = stoi(num_trains[0]),
-    y = stoi(num_trains[1]),
-    b = stoi(num_trains[1]);
+  int g = stoi(num_trains[0]), y = stoi(num_trains[1]),  b = stoi(num_trains[1]);
 
   // Seed for reproducibility
   srand(1);
