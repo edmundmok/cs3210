@@ -8,7 +8,7 @@
 #include <vector>
 #include <queue>
 
-#define UNDEFINED_WAIT -99
+#define UNDEFINED -99
 
 #define INF 999999999
 #define NINF -999999999
@@ -33,9 +33,9 @@ struct station_t {
   int station_num;
   string station_name;
   queue<train_t *> load_queue;
-  int last_arrival = UNDEFINED_WAIT;
+  int last_arrival = UNDEFINED;
   int num_arrivals = 0;
-  int total_waiting_time = UNDEFINED_WAIT;
+  int total_waiting_time = UNDEFINED;
   int min_waiting_time = INF;
   int max_waiting_time = NINF;
 };
