@@ -153,15 +153,10 @@ int main() {
   vector<float> station_popularities(S);
   read_popularities(cin, station_popularities);
 
-  unordered_set<int> green, yellow, blue;
-  read_stations(cin, stations_map, green);
-  read_stations(cin, stations_map, yellow);
-  read_stations(cin, stations_map, blue);
-
   vector<station_t> green_line, yellow_line, blue_line;
-  line_up_stations(dist_matrix, stations_strs, green, green_line);
-  line_up_stations(dist_matrix, stations_strs, yellow, yellow_line);
-  line_up_stations(dist_matrix, stations_strs, blue, blue_line);
+  read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, green_line);
+  read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, yellow_line);
+  read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, blue_line);
 
   int N = read_integer_line(cin);
 

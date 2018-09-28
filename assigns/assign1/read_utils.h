@@ -6,6 +6,9 @@
 #include <sstream>
 #include <vector>
 
+#include "network.h"
+#include "helpers.h"
+
 using namespace std;
 
 int read_integer_line(istream& is) {
@@ -39,6 +42,16 @@ void read_popularities(istream& is, vector<float>& popularities) {
   for (int i=0; i<popularity_strs.size(); i++) {
     popularities[i] = stof(popularity_strs[i]);
   }
+}
+
+void read_stations_for_line(istream& is,
+                            vector<string>& stations_str,
+                            unordered_map<string, int>& stations_map,
+                            vector<vector<int>>& dist_matrix,
+                            vector<station_t>& line) {
+  unordered_set<int> stations;
+  read_stations(is, stations_map, stations);
+  line_up_stations(dist_matrix, stations_str, stations, line);
 }
 
 #endif //ASSIGN1_READ_UTILS_H
