@@ -11,81 +11,18 @@
 #include <sstream>
 #include <cassert>
 
-#define INF 999999999
-#define NINF -999999999
+#include "read_utils.h"
+#include "network.h"
+#include "print_utils.h"
 
 #define GREEN 'g'
 #define BLUE 'b'
 #define YELLOW 'y'
 
-#define FORWARD 0
-#define BACKWARD 1
 
 #define MASTER_THREAD 0
 
-#define UNDEFINED_WAIT -99
-
 using namespace std;
-
-int N;
-
-struct train_count_t;
-struct station_t;
-struct train_t;
-
-struct train_count_t {
-  int g;
-  int y;
-  int b;
-  int total;
-};
-
-struct station_t {
-  int station_num;
-  string station_name;
-  queue<train_t *> load_queue;
-  int last_arrival = UNDEFINED_WAIT;
-  int num_arrivals = 0;
-  int total_waiting_time = UNDEFINED_WAIT;
-  int min_waiting_time = INF;
-  int max_waiting_time = NINF;
-};
-
-struct train_t {
-  char line;
-  int train_num;
-  vector<station_t> *stations;
-  int direction;
-  int local_station_idx;
-  int start_time;
-  int travel_remaining_time;  // If 0, means currently at a station.
-  int load_remaining_time;  // If 0, means doors are closed, and can move if track is ready.
-};
-
-struct network_t {
-  train_count_t *train_count;
-  vector<station_t> *blue_line;
-  vector<station_t> *yellow_line;
-  vector<station_t> *green_line;
-  vector<float> *station_popularities;
-  vector<vector<int>> *travel_time_matrix;
-};
-
-int read_integer_line(istream& is) {
-  int n;
-  is >> n;
-  is.ignore(1, '\n');  // remove newline at the end
-  return n;
-}
-
-void read_comma_sep_line(istream& is, vector<string>& sep_strs) {
-  string line, temp;
-  getline(is, line);
-  stringstream line_stream(line);
-  while (getline(line_stream, temp, ',')) {
-    sep_strs.push_back(temp);
-  }
-}
 
 void get_station_map(istream& is, unordered_map<string, int>& station_map,
                      vector<string>& stations) {
@@ -99,89 +36,6 @@ void read_stations(istream& is, unordered_map<string, int>& stations_map,
   for (string& station: stations) {
     station_set.insert(stations_map[station]);
   }
-}
-
-void print_vector(vector<int>& v) {
-  for (int e: v) {
-    cout << e << " ";
-  }
-  cout << endl;
-}
-
-void print_train_line(vector<station_t>& line) {
-  for (int i=0; i<line.size(); i++) {
-    if (i>0) cout << " - ";
-    cout << line[i].station_num << ":" << line[i].station_name;
-  }
-  cout << endl;
-}
-
-void print_train_lines(vector<station_t> &green, vector<station_t> &yellow,
-                       vector<station_t> &blue) {
-  cout << "green: ";
-  print_train_line(green);
-  cout << "yellow: ";
-  print_train_line(yellow);
-  cout << "blue: ";
-  print_train_line(blue);
-}
-
-void print_train(train_t& train) {
-  cout
-    << string(1, train.line)
-    << train.train_num
-    << " | "
-    << ((train.direction == FORWARD) ? "FORWARD" : "BACKWARD")
-    << " | "
-    << "STATION: "
-    << "l"
-    << train.local_station_idx
-    << ":"
-    << "g"
-    << (*train.stations)[train.local_station_idx].station_num
-    << ":"
-    << (*train.stations)[train.local_station_idx].station_name
-    << " | "
-    << "START TIME: "
-    << train.start_time
-    << endl;
-}
-
-void print_trains(vector<train_t>& trains) {
-  for (train_t& train: trains) {
-    print_train(train);
-  }
-}
-
-void print_system_state(vector<train_t>& trains, int current_time) {
-  cout << current_time << ": ";
-  for (train_t& train: trains) {
-    if (train.start_time > current_time) continue;
-    cout << train.line << train.train_num
-      << "-s"
-      << (*train.stations)[train.local_station_idx].station_num
-      // print track here if necessary
-      << ", ";
-  }
-  cout << endl;
-}
-
-void print_stations_timings(vector<station_t>& line, int total_time) {
-  int total_waiting_time = 0, total_longest_time = 0, total_shortest_time = 0;
-  for (station_t& station: line) {
-    total_waiting_time += station.total_waiting_time;
-    total_longest_time += station.max_waiting_time;
-    total_shortest_time += station.min_waiting_time;
-  }
-  int num_stations = (int) line.size();
-  cout << setprecision(2)
-       << 0.0
-//       << ((float) total_waiting_time) / (num_stations * )
-       << ", "
-       << ((float) total_longest_time) / num_stations
-       << ", "
-       << ((float) total_shortest_time) / num_stations
-       << endl;
 }
 
 bool is_terminal_station(vector<vector<int>>& M, int station_idx,
@@ -267,7 +121,7 @@ train_t prepare_train(vector<station_t> *stations, int i, char line) {
   return train;
 }
 
-void run_simulation(network_t *network) {
+void run_simulation(int N, network_t *network) {
 
   // assign trains to thread_ids
   vector<train_t> trains(network->train_count->total);
@@ -379,7 +233,7 @@ int main() {
   line_up_stations(travel_time_matrix, stations_strs, yellow, yellow_line);
   line_up_stations(travel_time_matrix, stations_strs, blue, blue_line);
 
-  N = read_integer_line(cin);
+  int N = read_integer_line(cin);
 
   vector<string> num_trains;
   read_comma_sep_line(cin, num_trains);
@@ -408,7 +262,7 @@ int main() {
     .station_popularities = &station_popularities
   };
 
-  run_simulation(&network);
+  run_simulation(N, &network);
 
   for (int i=0; i<S; i++) {
     for (int j=0; j<S; j++) {
