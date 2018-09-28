@@ -172,8 +172,8 @@ int main() {
   // Seed for reproducibility
   srand(1);
 
-  // Assuming this excludes the master thread
-  omp_set_num_threads(g+y+b);
+  // Include the master thread
+  omp_set_num_threads(g+y+b+1);
 
   train_count_t train_count = {
     .g = g,
@@ -190,8 +190,10 @@ int main() {
     .station_popularities = &station_popularities
   };
 
+  // Run simulation
   run_simulation(N, &network);
 
+  // Destroy locks
   for (int i=0; i<S; i++) {
     for (int j=0; j<S; j++) {
       omp_destroy_lock(&track_lock[i][j]);
