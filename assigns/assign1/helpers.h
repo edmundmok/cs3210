@@ -67,4 +67,9 @@ void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
   }
 }
 
+void get_station_map(istream& is, unordered_map<string, int>& station_map,
+                     vector<string>& stations) {
+  for (int i=0; i<stations.size(); i++) station_map[stations[i]] = i;
+}
+
 #endif //ASSIGN1_HELPERS_H

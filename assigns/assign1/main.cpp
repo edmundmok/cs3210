@@ -25,20 +25,6 @@
 
 using namespace std;
 
-void get_station_map(istream& is, unordered_map<string, int>& station_map,
-                     vector<string>& stations) {
-  for (int i=0; i<stations.size(); i++) station_map[stations[i]] = i;
-}
-
-void read_stations(istream& is, unordered_map<string, int>& stations_map,
-                   unordered_set<int>& station_set) {
-  vector<string> stations;
-  read_comma_sep_line(is, stations);
-  for (string& station: stations) {
-    station_set.insert(stations_map[station]);
-  }
-}
-
 int get_loading_time(int i, vector<float>& popularity) {
   // use the formula and take ceiling because train must stop for at least
   // that amount but ticks are integers
@@ -135,12 +121,14 @@ void run_simulation(int N, network_t *network) {
 }
 
 int main() {
+  // Read number of train stations in network
   int S = read_integer_line(cin);
 
-  // Map station name to index number
-  unordered_map<string, int> stations_map;
+  // Read list of stations and
   vector<string> stations_strs;
   read_comma_sep_line(cin, stations_strs);
+  // map station name to index number
+  unordered_map<string, int> stations_map;
   get_station_map(cin, stations_map, stations_strs);
 
   // Setup dist_matrix

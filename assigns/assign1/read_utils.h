@@ -24,4 +24,13 @@ void read_comma_sep_line(istream& is, vector<string>& sep_strs) {
   }
 }
 
+void read_stations(istream& is, unordered_map<string, int>& stations_map,
+                   unordered_set<int>& station_set) {
+  vector<string> stations;
+  read_comma_sep_line(is, stations);
+  for (string& station: stations) {
+    station_set.insert(stations_map[station]);
+  }
+}
+
 #endif //ASSIGN1_READ_UTILS_H
