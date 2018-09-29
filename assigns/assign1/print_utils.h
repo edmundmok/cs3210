@@ -70,7 +70,7 @@ void print_system_state(vector<Train>& trains, int current_time) {
     int global_station_num = train.get_global_station_num();
     cout << train.line << train.lnum << "-s" << global_station_num;
     if (train.state == MOVE)
-      cout << "->s" << (train.direction == FORWARD) ? global_station_num + 1 : global_station_num - 1;
+      cout << "->s" << train.get_global_next_station_num();
     cout << ", ";
   }
   cout << endl;
@@ -130,10 +130,10 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
   int total_maxs = 0, total_mins = 0, total_wt = 0;
   int num_maxs = 0, num_mins = 0, num_waits = 0 ;
 
-//  print_station_header(line_name);
+  print_station_header(line_name);
 
   for (station_t& station: line) {
-//    print_station_timings(station);
+    print_station_timings(station);
 
     if (station.num_forward_waits < 1 or station.num_backward_waits < 1)
       has_insufficient_data = true;
@@ -197,7 +197,7 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
        << ": "
        << num_trains
        << " trains -> "
-       << setprecision(2)
+//       << setprecision(2)
        << avg_wait
        << ", "
        << avg_max
