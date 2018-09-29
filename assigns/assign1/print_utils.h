@@ -88,7 +88,7 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
        << " | "
        << "station_name"
        << " | "
-       << "num_forward_arrivals"
+       << "num_forward_waits"
        << " | "
        << "total_forward_waiting_time"
        << " | "
@@ -96,7 +96,7 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
        << " | "
        << "max_forward_waiting_time"
        << " | "
-       << "num_backward_arrivals"
+       << "num_backward_waits"
        << " | "
        << "total_backward_waiting_time"
        << " | "
@@ -110,7 +110,7 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
          << " | "
          << station.station_name
          << " | "
-         << station.num_forward_arrivals
+         << station.num_forward_waits
          << " | "
          << station.total_forward_waiting_time
          << " | "
@@ -118,7 +118,7 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
          << " | "
          << station.max_forward_waiting_time
          << " | "
-         << station.num_backward_arrivals
+         << station.num_backward_waits
          << " | "
          << station.total_backward_waiting_time
          << " | "
@@ -127,14 +127,14 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
          << station.max_backward_waiting_time
          << endl;
 
-    if (station.num_forward_arrivals < 2 or station.num_backward_arrivals < 2)
+    if (station.num_forward_waits < 1 or station.num_backward_waits < 1)
       has_insufficient_data = true;
-    if (station.num_forward_arrivals > 2 or station.num_backward_arrivals > 2)
+    if (station.num_forward_waits >= 1 or station.num_forward_waits >= 1)
       has_valid_wait_time = true;
 
     // Settle forward
-    if (station.num_forward_arrivals > 1) {
-      num_waits += (station.num_forward_arrivals-1);
+    if (station.num_forward_waits > 1) {
+      num_waits += station.num_forward_waits;
       total_wt += station.total_forward_waiting_time;
     }
 
@@ -149,8 +149,8 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
     }
 
     // Settle backward
-    if (station.num_backward_arrivals > 1) {
-      num_waits += (station.num_backward_arrivals-1);
+    if (station.num_backward_waits > 1) {
+      num_waits += station.num_backward_waits;
       total_wt += station.total_backward_waiting_time;
     }
 

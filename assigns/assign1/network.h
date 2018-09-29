@@ -59,7 +59,7 @@ struct station_t {
   // Last user
   int last_forward_user = UNKNOWN_TRAIN;
   int last_forward_arrival = UNDEFINED;
-  int num_forward_arrivals = 0;
+  int num_forward_waits = 0;
   int total_forward_waiting_time = 0;
   int min_forward_waiting_time = INF;
   int max_forward_waiting_time = NINF;
@@ -67,7 +67,7 @@ struct station_t {
   // Backward stats
   int last_backward_user = UNKNOWN_TRAIN;
   int last_backward_arrival = UNDEFINED;
-  int num_backward_arrivals = 0;
+  int num_backward_waits = 0;
   int total_backward_waiting_time = 0;
   int min_backward_waiting_time = INF;
   int max_backward_waiting_time = NINF;

@@ -137,33 +137,37 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
 
             // check if first time loading! (door just opened!)
             if (direction == FORWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user != train_id) {
-              // Update timings!
               (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user = train_id;
+              // Update timings!
               if ((*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival != UNDEFINED) {
                 int latest_wait = tick - (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival;
                 (*trains[train_id].stations)[trains[train_id].local_station_idx].total_forward_waiting_time += latest_wait;
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].num_forward_waits++;
                 (*trains[train_id].stations)[trains[train_id].local_station_idx].min_forward_waiting_time = min((*trains[train_id].stations)[trains[train_id].local_station_idx].min_forward_waiting_time, latest_wait);
                 (*trains[train_id].stations)[trains[train_id].local_station_idx].max_forward_waiting_time = max((*trains[train_id].stations)[trains[train_id].local_station_idx].max_forward_waiting_time, latest_wait);
               }
-              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival = tick;
-              (*trains[train_id].stations)[trains[train_id].local_station_idx].num_forward_arrivals++;
-
             } else if (direction == BACKWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user != train_id) {
-              // Update timings!
               (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user = train_id;
+              // Update timings!
               if ((*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival != UNDEFINED) {
                 int latest_wait = tick - (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival;
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].num_backward_waits++;
                 (*trains[train_id].stations)[trains[train_id].local_station_idx].total_backward_waiting_time += latest_wait;
                 (*trains[train_id].stations)[trains[train_id].local_station_idx].min_backward_waiting_time = min((*trains[train_id].stations)[trains[train_id].local_station_idx].min_backward_waiting_time, latest_wait);
                 (*trains[train_id].stations)[trains[train_id].local_station_idx].max_backward_waiting_time = max((*trains[train_id].stations)[trains[train_id].local_station_idx].max_backward_waiting_time, latest_wait);
               }
-              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival = tick;
-              (*trains[train_id].stations)[trains[train_id].local_station_idx].num_backward_arrivals++;
             }
 
             trains[train_id].remaining_time--;
             if (trains[train_id].remaining_time == 0) {
               // doors will close after this tick!
+              // update timings
+              if (direction == FORWARD) {
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival = tick;
+              } else {
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival = tick;
+              }
+
               #pragma omp critical(station_lock_name)
               {
                 // remove myself from the old queue since I am done!
