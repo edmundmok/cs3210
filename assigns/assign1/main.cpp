@@ -135,7 +135,7 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
           if (should_load) {
             assert(trains[train_id].remaining_time > 0);
 
-            // check if first time loading!
+            // check if first time loading! (door just opened!)
             if (direction == FORWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user != train_id) {
               // Update timings!
               (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user = train_id;

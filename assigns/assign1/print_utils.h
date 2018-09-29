@@ -84,6 +84,26 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
   int num_maxs = 0, num_mins = 0, num_waits = 0 ;
 
   cout << "DEBUG " << line_name << endl;
+  cout << "station_num"
+       << " | "
+       << "station_name"
+       << " | "
+       << "num_forward_arrivals"
+       << " | "
+       << "total_forward_waiting_time"
+       << " | "
+       << "min_forward_waiting_time"
+       << " | "
+       << "max_forward_waiting_time"
+       << " | "
+       << "num_backward_arrivals"
+       << " | "
+       << "total_backward_waiting_time"
+       << " | "
+       << "min_backward_waiting_time"
+       << " | "
+       << "max_backward_waiting_time"
+       << endl;
 
   for (station_t& station: line) {
     cout << station.station_num
@@ -96,13 +116,13 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
          << " | "
          << station.min_forward_waiting_time
          << " | "
-         << station.max_backward_waiting_time
+         << station.max_forward_waiting_time
          << " | "
          << station.num_backward_arrivals
          << " | "
          << station.total_backward_waiting_time
          << " | "
-         << station.min_forward_waiting_time
+         << station.min_backward_waiting_time
          << " | "
          << station.max_backward_waiting_time
          << endl;
