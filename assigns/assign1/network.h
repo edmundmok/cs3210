@@ -14,6 +14,8 @@
 #define INF 999999999
 #define NINF -999999999
 
+#define UNKNOWN_TRAIN -1
+
 using namespace std;
 
 struct train_count_t;
@@ -32,6 +34,10 @@ struct train_count_t {
 };
 
 struct station_queue_t {
+  // Last user
+  int last_forward_user = UNKNOWN_TRAIN;
+  int last_backward_user = UNKNOWN_TRAIN;
+
   // Last use times
   int forward_time = -1;
   int backward_time = -1;

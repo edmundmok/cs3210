@@ -123,12 +123,10 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
           {
             if (direction == FORWARD and station_use[global_station_num].forward_load_q.front() == train_id
                 and station_use[global_station_num].forward_time < tick) {
-//              cout << train_id << ":" << trains[train_id].state << ":" << trains[train_id].remaining_time << endl;
               station_use[global_station_num].forward_time = tick;
               should_load = true;
             } else if (direction == BACKWARD and station_use[global_station_num].backward_load_q.front() == train_id
                        and station_use[global_station_num].backward_time < tick) {
-//              cout << train_id << ":" << trains[train_id].state << ":" << trains[train_id].remaining_time << endl;
               station_use[global_station_num].backward_time = tick;
               should_load = true;
             }
@@ -136,6 +134,17 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
 
           if (should_load) {
             assert(trains[train_id].remaining_time > 0);
+
+            // check if first time loading!
+            if (direction == FORWARD and station_use[global_station_num].last_forward_user != train_id) {
+              // Update timings!
+              station_use[global_station_num].last_forward_user = train_id;
+            } else if (direction == BACKWARD and station_use[global_station_num].last_backward_user != train_id) {
+              // Update timings!
+              station_use[global_station_num].last_backward_user = train_id;
+            }
+
+
             trains[train_id].remaining_time--;
             if (trains[train_id].remaining_time == 0) {
               // doors will close after this tick!
@@ -144,9 +153,11 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                 // remove myself from the old queue since I am done!
                 if (direction == FORWARD) {
                   assert(station_use[global_station_num].forward_load_q.front() == train_id);
+                  station_use[global_station_num].last_forward_user = UNDEFINED;
                   station_use[global_station_num].forward_load_q.pop();
                 } else {
                   assert(station_use[global_station_num].backward_load_q.front() == train_id);
+                  station_use[global_station_num].last_backward_user = UNDEFINED;
                   station_use[global_station_num].backward_load_q.pop();
                 }
               }
