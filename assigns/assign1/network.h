@@ -16,6 +16,9 @@
 
 #define UNKNOWN_TRAIN -1
 
+#define STATION_LOCK_PREFIX "station_"
+#define TRACK_LOCK_PREFIX "track_"
+
 using namespace std;
 
 struct train_count_t;
@@ -82,36 +85,177 @@ int get_loading_time(int i, vector<float>& popularity) {
 class Train {
 public:
   char line;
-  int num; // train number for this particular line
+  int lnum; // train number for this particular line
+  int gnum;
   vector<station_t>& stations;
+  vector<float>& station_popularities;
+
   TrainDirection direction;
   TrainState state;
   int local_station_num;
   int remaining_time;
 
+  vector<station_queue_t>& station_uses;
+  vector<vector<track_queue_t>>& track_uses;
+
   int start_time; // For printing and debugging purposes
 
-  Train(char line, int num, vector<station_t>& stations, int local_station_num,
-  vector<float>& popularities) :
-  line(line), num(num), stations(stations), state(LOAD) {
+  Train(char line, int lnum, int gnum, vector<station_t>& stations,
+        vector<float>& popularities, vector<station_queue_t>& station_use,
+        vector<vector<track_queue_t>>& track_uses) :
+  line(line), lnum(lnum), gnum(gnum), stations(stations), state(LOAD),
+  station_popularities(popularities), station_uses(station_use),
+  track_uses(track_uses)
+   {
     int num_stations = stations.size();
-    this->direction = (num % 2) ? FORWARD : BACKWARD;
-    this->local_station_num = (num % 2) ? 0 : num_stations-1;
-    int global_station_num = stations[this->local_station_num].station_num;
-    this->remaining_time = get_loading_time(global_station_num, popularities);
-    this->start_time = num/2;
+    direction = (lnum % 2) ? FORWARD : BACKWARD;
+    local_station_num = (lnum % 2) ? 0 : num_stations-1;
+    int global_station_num = get_global_station_num();
+    remaining_time = get_loading_time(global_station_num, popularities);
+    start_time = lnum/2;
   };
+
+  int get_global_station_num() {
+    return stations[local_station_num].station_num;
+  }
+
+  int get_global_next_station_num() {
+    assert(!is_at_terminal_station());
+    int local_next_station = local_station_num + (direction == FORWARD) ? 1 : -1;
+    return stations[local_station_num].station_num;
+  }
+
+  string get_station_lock_name() {
+    return STATION_LOCK_PREFIX + to_string(direction)
+           + to_string(get_global_station_num());
+  }
+
+  string get_track_lock_name() {
+    int curr_station = get_global_station_num();
+    int next_station = get_global_next_station_num();
+    return TRACK_LOCK_PREFIX + to_string(curr_station)
+           + "-" + to_string(next_station);
+  }
+
+  station_t& get_station() {
+    return stations[local_station_num];
+  }
+
+  station_queue_t& get_station_use() {
+    return station_uses[get_global_station_num()];
+  }
+
+  void queue_for_station_use() {
+    station_queue_t& station_use = get_station_use();
+    if (direction == FORWARD) station_use.forward_load_q.push(gnum);
+    else station_use.backward_load_q.push(gnum);
+  }
+
+  void queue_for_track_use() {
+    int curr_station = get_global_station_num(),
+      next_station = get_global_next_station_num();
+    track_uses[curr_station][next_station];
+  }
+
+  bool should_load(int tick) {
+    assert(state == LOAD);
+    station_queue_t& station_use = get_station_use();
+    return (direction == FORWARD and station_use.forward_load_q.front() == gnum
+            and station_use.forward_time < tick)
+           or (direction == BACKWARD and station_use.backward_load_q.front() == gnum
+               and station_use.backward_time < tick);
+  }
+
+  void acknowledge_load(int tick) {
+    station_queue_t& station_use = get_station_use();
+    if (direction == FORWARD) station_use.forward_time = tick;
+    else station_use.backward_time = tick;
+  }
+
+  bool has_door_just_opened() {
+    station_t& station = get_station();
+    return (direction == FORWARD and station.last_forward_user != gnum)
+      or (direction == BACKWARD and station.last_backward_user != gnum);
+  }
+
+  bool is_first_arrival() {
+    station_t& station = get_station();
+    return (direction == FORWARD and station.last_forward_user == UNDEFINED)
+      or (direction == BACKWARD and station.last_backward_user == UNDEFINED);
+  }
+
+  void update_station_wait_times_as_arrival(int tick) {
+    station_t& station = get_station();
+    if (direction == FORWARD) {
+      station.last_forward_user = gnum;
+    } else {
+      station.last_backward_user = gnum;
+    }
+
+    if (is_first_arrival()) return;
+
+    if (direction == FORWARD) {
+      int latest_wait = tick - station.last_forward_arrival;
+      station.total_forward_waiting_time += latest_wait;
+      station.num_forward_waits++;
+      station.min_forward_waiting_time = min(station.min_forward_waiting_time, latest_wait);
+      station.max_forward_waiting_time = max(station.max_forward_waiting_time, latest_wait);
+    } else {
+      int latest_wait = tick - station.last_backward_arrival;
+      station.total_backward_waiting_time += latest_wait;
+      station.num_backward_waits++;
+      station.min_backward_waiting_time = min(station.min_backward_waiting_time, latest_wait);
+      station.max_backward_waiting_time = max(station.max_backward_waiting_time, latest_wait);
+    }
+  }
+
+  void update_remaining_time() { remaining_time--; }
+
+  void update_station_wait_times_as_departure(int tick) {
+    station_t& station = get_station();
+    if (direction == FORWARD) station.last_forward_arrival = tick;
+    else station.last_backward_arrival = tick;
+  }
+
+  void remove_as_station_user() {
+    station_t& station = get_station();
+    if (direction == FORWARD) {
+      assert(station.last_forward_user == gnum);
+      station.last_forward_user = UNDEFINED;
+    } else {
+      assert(station.last_backward_user == gnum);
+      station.last_forward_user = UNDEFINED;
+    }
+  }
+
+  void dequeue_from_station_use() {
+    assert(remaining_time == 0);
+    assert(state == LOAD);
+
+    station_queue_t& station_use = get_station_use();
+    if (direction == FORWARD) {
+      assert(station_use.forward_load_q.front() == gnum);
+      station_use.forward_load_q.pop();
+    } else {
+      assert(station_use.backward_load_q.front() == gnum);
+      station_use.backward_load_q.pop();
+    }
+  }
+
+  bool is_at_terminal_station() {
+    return (direction == BACKWARD and local_station_num == 0)
+      or (direction == FORWARD and local_station_num == stations.size()-1);
+  }
+
+  void reverse_train_direction() {
+    direction = (direction == FORWARD) ? BACKWARD : FORWARD;
+  }
+
+  void reset_remaining_time() {
+    remaining_time = get_loading_time(get_global_station_num(), station_popularities);
+  }
+
 };
 
-struct train_t {
-  char line;
-  int train_num;
-  vector<station_t> *stations;
-  TrainDirection direction;
-  int local_station_idx;
-  int start_time;
-  TrainState state;
-  int remaining_time;
-};
 
 #endif //ASSIGN1_NETWORK_H

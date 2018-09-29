@@ -63,12 +63,12 @@ void print_trains(vector<train_t>& trains) {
   }
 }
 
-void print_system_state(vector<train_t>& trains, int current_time) {
+void print_system_state(vector<Train>& trains, int current_time) {
   cout << current_time << ": ";
-  for (train_t& train: trains) {
+  for (Train& train: trains) {
     if (train.start_time > current_time) continue;
-    int global_station_num = (*train.stations)[train.local_station_idx].station_num;
-    cout << train.line << train.train_num << "-s" << global_station_num;
+    int global_station_num = train.get_global_station_num();
+    cout << train.line << train.lnum << "-s" << global_station_num;
     if (train.state == MOVE)
       cout << "->s" << (train.direction == FORWARD) ? global_station_num + 1 : global_station_num - 1;
     cout << ", ";

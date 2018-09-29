@@ -22,26 +22,7 @@
 
 #define MASTER_THREAD 0
 
-#define STATION_LOCK_PREFIX "station_"
-#define TRACK_LOCK_PREFIX "track_"
-
 using namespace std;
-
-train_t prepare_train(vector<station_t>& stations, int i, char line,
-                      vector<float>& popularity) {
-  int station_idx = (i % 2 == FORWARD) ? 0 : ((int) stations.size()) - 1;
-  train_t train = {
-    .line = line,
-    .train_num = i,
-    .stations = &stations,
-    .direction = (i % 2 == FORWARD) ? FORWARD : BACKWARD,
-    .local_station_idx = station_idx,
-    .start_time = i/2,
-    .state = LOAD,
-    .remaining_time = get_loading_time(stations[station_idx].station_num, popularity)
-  };
-  return train;
-}
 
 void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_line,
                     vector<station_t>& yellow_line, vector<station_t>& green_line,
@@ -51,39 +32,35 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                     vector<vector<track_queue_t>>& track_use) {
 
   // assign trains to thread_ids
-  vector<train_t> trains(train_count.total);
+  vector<Train> trains;
 
   assert (green_line.size() > 0);
   assert (yellow_line.size() > 0);
   assert (blue_line.size() > 0);
 
-  int j=0;
   // assign green line trains
+  int j=0;
   for (int i=0; i<train_count.g; i++, j++) {
-    trains[j] = prepare_train(green_line, i, GREEN, station_popularities);
-    if (trains[j].direction == FORWARD)
-      station_use[green_line[trains[j].local_station_idx].station_num].forward_load_q.push(j);
-    else
-      station_use[green_line[trains[j].local_station_idx].station_num].backward_load_q.push(j);
+    trains.push_back(Train(GREEN, i, j, green_line, station_popularities,
+                           station_use, track_use));
+    trains[j].queue_for_station_use();
   }
 
   // assign yellow line trains
   for (int i=0; i<train_count.y; i++, j++) {
-    trains[j] = prepare_train(yellow_line, i, YELLOW, station_popularities);
-    if (trains[j].direction == FORWARD)
-      station_use[yellow_line[trains[j].local_station_idx].station_num].forward_load_q.push(j);
-    else
-      station_use[yellow_line[trains[j].local_station_idx].station_num].backward_load_q.push(j);
+    trains.push_back(Train(YELLOW, i, j, yellow_line, station_popularities,
+                           station_use, track_use));
+    trains[j].queue_for_station_use();
   }
 
   // assign blue line trains
   for (int i=0; i<train_count.b; i++, j++) {
-    trains[j] = prepare_train(blue_line, i, BLUE, station_popularities);
-    if (trains[j].direction == FORWARD)
-      station_use[blue_line[trains[j].local_station_idx].station_num].forward_load_q.push(j);
-    else
-      station_use[blue_line[trains[j].local_station_idx].station_num].backward_load_q.push(j);
+    trains.push_back(Train(BLUE, i, j, blue_line, station_popularities,
+                           station_use, track_use));
+    trains[j].queue_for_station_use();
   }
+
+  assert(trains.size() == train_count.total);
 
   #pragma omp parallel num_threads(train_count.total + 1)
   {
@@ -103,109 +80,77 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
 
       // do some parallel work here
       if (thread_id != MASTER_THREAD) {
+        Train& train = trains[train_id];
+        assert(train.gnum == train_id);
+
         // in a train
-        int global_station_num = (*trains[train_id].stations)[trains[train_id].local_station_idx].station_num;
-        TrainDirection direction = trains[train_id].direction;
-        string direction_str = (direction == FORWARD) ? "F" : "B";
+        int global_station_num = train.get_global_station_num();
+        TrainDirection direction = train.direction;
 
-        if (trains[train_id].state == LOAD) {
-          string station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(global_station_num);
-
+        if (train.state == LOAD) {
           bool should_load = false;
           // check if allowed to load now
-          #pragma omp critical(station_lock_name)
+          #pragma omp critical(train.get_station_lock_name())
           {
-            if (direction == FORWARD and station_use[global_station_num].forward_load_q.front() == train_id
-                and station_use[global_station_num].forward_time < tick) {
-              station_use[global_station_num].forward_time = tick;
+            if (train.should_load(tick)) {
               should_load = true;
-            } else if (direction == BACKWARD and station_use[global_station_num].backward_load_q.front() == train_id
-                       and station_use[global_station_num].backward_time < tick) {
-              station_use[global_station_num].backward_time = tick;
-              should_load = true;
+              train.acknowledge_load(tick);
             }
           }
 
           if (should_load) {
-            assert(trains[train_id].remaining_time > 0);
+            assert(train.remaining_time > 0);
 
             // check if first time loading! (door just opened!)
-            if (direction == FORWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user != train_id) {
-              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user = train_id;
-              // Update timings!
-              if ((*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival != UNDEFINED) {
-                int latest_wait = tick - (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival;
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].total_forward_waiting_time += latest_wait;
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].num_forward_waits++;
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].min_forward_waiting_time = min((*trains[train_id].stations)[trains[train_id].local_station_idx].min_forward_waiting_time, latest_wait);
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].max_forward_waiting_time = max((*trains[train_id].stations)[trains[train_id].local_station_idx].max_forward_waiting_time, latest_wait);
-              }
-            } else if (direction == BACKWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user != train_id) {
-              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user = train_id;
-              // Update timings!
-              if ((*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival != UNDEFINED) {
-                int latest_wait = tick - (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival;
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].num_backward_waits++;
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].total_backward_waiting_time += latest_wait;
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].min_backward_waiting_time = min((*trains[train_id].stations)[trains[train_id].local_station_idx].min_backward_waiting_time, latest_wait);
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].max_backward_waiting_time = max((*trains[train_id].stations)[trains[train_id].local_station_idx].max_backward_waiting_time, latest_wait);
-              }
+            if (train.has_door_just_opened()) {
+              train.update_station_wait_times_as_arrival(tick);
             }
 
-            trains[train_id].remaining_time--;
-            if (trains[train_id].remaining_time == 0) {
-              // doors will close after this tick!
+            train.update_remaining_time();
+
+            if (train.remaining_time == 0) {
               // update timings
-              if (direction == FORWARD) {
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival = tick;
-              } else {
-                (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival = tick;
-              }
+              train.update_station_wait_times_as_departure(tick);
 
               #pragma omp critical(station_lock_name)
               {
                 // remove myself from the old queue since I am done!
-                if (direction == FORWARD) {
-                  assert(station_use[global_station_num].forward_load_q.front() == train_id);
-                  (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user = UNDEFINED;
-                  station_use[global_station_num].forward_load_q.pop();
-                } else {
-                  assert(station_use[global_station_num].backward_load_q.front() == train_id);
-                  (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user = UNDEFINED;
-                  station_use[global_station_num].backward_load_q.pop();
-                }
+                train.remove_as_station_user();
+                train.dequeue_from_station_use();
               }
 
-              if ((trains[train_id].local_station_idx == 0 and direction == BACKWARD)
-                  or (trains[train_id].local_station_idx == trains[train_id].stations->size()-1 and direction == FORWARD)) {
-                // check if I am at a terminal, transfer myself to the load
-                // queue of the other direction of this station
-                trains[train_id].direction = (trains[train_id].direction == FORWARD) ? BACKWARD : FORWARD;
-                direction_str = (trains[train_id].direction == FORWARD) ? "F" : "B";
-                station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(global_station_num);
-                #pragma omp critical(station_lock_name)
+              if (train.is_at_terminal_station()) {
+                // next move should be other direction load
+                train.reverse_train_direction();
+                #pragma omp critical(train.get_station_lock_name())
                 {
-                  if (trains[train_id].direction == FORWARD) {
-                    station_use[global_station_num].forward_load_q.push(train_id);
-                  } else {
-                    station_use[global_station_num].backward_load_q.push(train_id);
-                  }
+                  train.queue_for_station_use();
                 }
-                trains[train_id].remaining_time = get_loading_time(global_station_num, station_popularities);
-
+                train.reset_remaining_time();
               } else {
-                // otherwise transfer myself to the track queue
-                int curr_station = global_station_num;
-                int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
-                string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
-                trains[train_id].state = MOVE;
-                trains[train_id].remaining_time = dist_matrix[curr_station][next_station];
+                // next move should be wait for track
+                train.state = MOVE;
 
-                #pragma omp critical(track_lock_name)
+                #pragma omp critical(train.get_track_lock_name)
                 {
-                  track_use[curr_station][next_station].track_q.push(train_id);
+
                 }
+
               }
+
+//              } else {
+//                // otherwise transfer myself to the track queue
+//                int curr_station = global_station_num;
+//                int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
+//                string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
+//                trains[train_id].state = MOVE;
+//                trains[train_id].remaining_time = dist_matrix[curr_station][next_station];
+//
+//                #pragma omp critical(track_lock_name)
+//                {
+//                  track_use[curr_station][next_station].track_q.push(train_id);
+//                }
+//              }
             }
           }
 
