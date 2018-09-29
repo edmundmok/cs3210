@@ -87,6 +87,8 @@ public:
   char line;
   int lnum; // train number for this particular line
   int gnum;
+
+  vector<vector<int>>& dist_matrix;
   vector<station_t>& stations;
   vector<float>& station_popularities;
 
@@ -101,14 +103,15 @@ public:
   int start_time; // For printing and debugging purposes
 
   Train(char line, int lnum, int gnum, vector<station_t>& stations,
-        vector<float>& popularities, vector<station_queue_t>& station_use,
+        vector<vector<int>>& dist_matrix, vector<float>& popularities,
+        vector<station_queue_t>& station_use,
         vector<vector<track_queue_t>>& track_uses) :
-  line(line), lnum(lnum), gnum(gnum), stations(stations), state(LOAD),
-  station_popularities(popularities), station_uses(station_use),
+  line(line), lnum(lnum), gnum(gnum), stations(stations), dist_matrix(dist_matrix),
+  state(LOAD), station_popularities(popularities), station_uses(station_use),
   track_uses(track_uses) {
     int num_stations = stations.size();
-    direction = (lnum % 2) ? FORWARD : BACKWARD;
-    local_station_num = (lnum % 2) ? 0 : num_stations-1;
+    direction = (lnum % 2 == 0) ? FORWARD : BACKWARD;
+    local_station_num = (lnum % 2 == 0) ? 0 : num_stations-1;
     int global_station_num = get_global_station_num();
     start_time = lnum/2;
     reset_remaining_time_for_load();
@@ -119,13 +122,12 @@ public:
   }
 
   int get_local_next_station_num() {
-    return local_station_num + (direction == FORWARD) ? 1 : -1;
+    return local_station_num + ((direction == FORWARD) ? 1 : -1);
   }
 
   int get_global_next_station_num() {
     assert(!is_at_terminal_station());
-    int local_next_station = get_local_next_station_num();
-    return stations[local_station_num].station_num;
+    return stations[get_local_next_station_num()].station_num;
   }
 
   string get_station_lock_name() {
@@ -164,6 +166,19 @@ public:
   void queue_for_track_use() {
     track_queue_t& track_use = get_track_use();
     track_use.track_q.push(gnum);
+  }
+
+  void reset_remaining_time_for_track() {
+    int curr_station = get_global_station_num(),
+      next_station = get_global_next_station_num();
+//    cout << line << " " << curr_station << ", " << next_station << endl;
+//    for (int i=0; i<dist_matrix.size(); i++) {
+//      for (int j=0; j<dist_matrix[0].size(); j++) {
+//        cout << dist_matrix[i][j] << " ";
+//      }
+//      cout << endl;
+//    }
+    remaining_time = dist_matrix[curr_station][next_station];
   }
 
   bool should_load(int tick) {

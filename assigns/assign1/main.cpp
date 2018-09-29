@@ -41,21 +41,21 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
   // assign green line trains
   int j=0;
   for (int i=0; i<train_count.g; i++, j++) {
-    trains.push_back(Train(GREEN, i, j, green_line, station_popularities,
+    trains.push_back(Train(GREEN, i, j, green_line, dist_matrix, station_popularities,
                            station_use, track_use));
     trains[j].queue_for_station_use();
   }
 
   // assign yellow line trains
   for (int i=0; i<train_count.y; i++, j++) {
-    trains.push_back(Train(YELLOW, i, j, yellow_line, station_popularities,
+    trains.push_back(Train(YELLOW, i, j, yellow_line, dist_matrix, station_popularities,
                            station_use, track_use));
     trains[j].queue_for_station_use();
   }
 
   // assign blue line trains
   for (int i=0; i<train_count.b; i++, j++) {
-    trains.push_back(Train(BLUE, i, j, blue_line, station_popularities,
+    trains.push_back(Train(BLUE, i, j, blue_line, dist_matrix, station_popularities,
                            station_use, track_use));
     trains[j].queue_for_station_use();
   }
@@ -72,6 +72,7 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
       // Let master print out the current state of the system
       #pragma omp master
       {
+//        print_trains(trains);
         print_system_state(trains, tick);
       }
 
@@ -133,6 +134,8 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                 {
                   train.queue_for_track_use();
                 }
+                train.reset_remaining_time_for_track();
+//                cout << train.remaining_time << endl;
               }
             }
           }

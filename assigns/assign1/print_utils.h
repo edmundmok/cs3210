@@ -48,7 +48,7 @@ void print_train(Train& train) {
     << train.local_station_num
     << ":"
     << "g"
-    << train.get_global_next_station_num()
+    << train.get_global_station_num()
     << ":"
     << train.stations[train.local_station_num].station_name
     << " | "
