@@ -130,10 +130,10 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
   int total_maxs = 0, total_mins = 0, total_wt = 0;
   int num_maxs = 0, num_mins = 0, num_waits = 0 ;
 
-  print_station_header(line_name);
+//  print_station_header(line_name);
 
   for (station_t& station: line) {
-    print_station_timings(station);
+//    print_station_timings(station);
 
     if (station.num_forward_waits < 1 or station.num_backward_waits < 1)
       has_insufficient_data = true;

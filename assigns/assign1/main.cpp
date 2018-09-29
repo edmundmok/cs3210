@@ -315,7 +315,7 @@ int main() {
   int g = stoi(num_trains[0]), y = stoi(num_trains[1]),  b = stoi(num_trains[1]);
 
   // Seed for reproducibility
-  srand(1);
+//  srand(123);
 
   // Include the master thread
   omp_set_num_threads(g+y+b+1);
