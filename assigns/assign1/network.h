@@ -204,8 +204,8 @@ public:
 
   bool is_first_arrival() {
     station_t& station = get_station();
-    return (direction == FORWARD and station.last_forward_user == UNDEFINED)
-      or (direction == BACKWARD and station.last_backward_user == UNDEFINED);
+    return (direction == FORWARD and station.last_forward_arrival == UNDEFINED)
+      or (direction == BACKWARD and station.last_backward_arrival == UNDEFINED);
   }
 
   void update_station_wait_times_as_arrival(int tick) {
