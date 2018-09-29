@@ -36,29 +36,29 @@ void print_train_lines(vector<station_t> &green, vector<station_t> &yellow,
   print_train_line(blue);
 }
 
-void print_train(train_t& train) {
+void print_train(Train& train) {
   cout
     << string(1, train.line)
-    << train.train_num
+    << train.lnum
     << " | "
     << ((train.direction == FORWARD) ? "FORWARD" : "BACKWARD")
     << " | "
     << "STATION: "
     << "l"
-    << train.local_station_idx
+    << train.local_station_num
     << ":"
     << "g"
-    << (*train.stations)[train.local_station_idx].station_num
+    << train.get_global_next_station_num()
     << ":"
-    << (*train.stations)[train.local_station_idx].station_name
+    << train.stations[train.local_station_num].station_name
     << " | "
     << "START TIME: "
     << train.start_time
     << endl;
 }
 
-void print_trains(vector<train_t>& trains) {
-  for (train_t& train: trains) {
+void print_trains(vector<Train>& trains) {
+  for (Train& train: trains) {
     print_train(train);
   }
 }

@@ -105,23 +105,26 @@ public:
         vector<vector<track_queue_t>>& track_uses) :
   line(line), lnum(lnum), gnum(gnum), stations(stations), state(LOAD),
   station_popularities(popularities), station_uses(station_use),
-  track_uses(track_uses)
-   {
+  track_uses(track_uses) {
     int num_stations = stations.size();
     direction = (lnum % 2) ? FORWARD : BACKWARD;
     local_station_num = (lnum % 2) ? 0 : num_stations-1;
     int global_station_num = get_global_station_num();
-    remaining_time = get_loading_time(global_station_num, popularities);
     start_time = lnum/2;
+    reset_remaining_time_for_load();
   };
 
   int get_global_station_num() {
     return stations[local_station_num].station_num;
   }
 
+  int get_local_next_station_num() {
+    return local_station_num + (direction == FORWARD) ? 1 : -1;
+  }
+
   int get_global_next_station_num() {
     assert(!is_at_terminal_station());
-    int local_next_station = local_station_num + (direction == FORWARD) ? 1 : -1;
+    int local_next_station = get_local_next_station_num();
     return stations[local_station_num].station_num;
   }
 
@@ -151,10 +154,16 @@ public:
     else station_use.backward_load_q.push(gnum);
   }
 
-  void queue_for_track_use() {
+  track_queue_t& get_track_use() {
+    assert(state == MOVE);
     int curr_station = get_global_station_num(),
       next_station = get_global_next_station_num();
-    track_uses[curr_station][next_station];
+    return track_uses[curr_station][next_station];
+  }
+
+  void queue_for_track_use() {
+    track_queue_t& track_use = get_track_use();
+    track_use.track_q.push(gnum);
   }
 
   bool should_load(int tick) {
@@ -242,6 +251,13 @@ public:
     }
   }
 
+  void dequeue_from_track_use() {
+    assert(state == MOVE);
+    track_queue_t& track_use = get_track_use();
+    assert(track_use.track_q.front() == gnum);
+    track_use.track_q.pop();
+  }
+
   bool is_at_terminal_station() {
     return (direction == BACKWARD and local_station_num == 0)
       or (direction == FORWARD and local_station_num == stations.size()-1);
@@ -251,8 +267,24 @@ public:
     direction = (direction == FORWARD) ? BACKWARD : FORWARD;
   }
 
-  void reset_remaining_time() {
+  void reset_remaining_time_for_load() {
     remaining_time = get_loading_time(get_global_station_num(), station_popularities);
+  }
+
+  bool should_move_on_track(int tick) {
+    track_queue_t& track_use = get_track_use();
+    return (track_use.track_q.front() == gnum) and (track_use.time < tick);
+  }
+
+  void acknowledge_move_on_track(int tick) {
+    track_queue_t& track_use = get_track_use();
+    track_use.time = tick;
+  }
+
+  void progress_to_load_at_next_station() {
+    state = LOAD;
+    local_station_num = get_local_next_station_num();
+    reset_remaining_time_for_load();
   }
 
 };

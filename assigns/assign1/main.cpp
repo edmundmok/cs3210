@@ -83,14 +83,11 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
         Train& train = trains[train_id];
         assert(train.gnum == train_id);
 
-        // in a train
-        int global_station_num = train.get_global_station_num();
-        TrainDirection direction = train.direction;
-
         if (train.state == LOAD) {
           bool should_load = false;
           // check if allowed to load now
-          #pragma omp critical(train.get_station_lock_name())
+          string station_lock_name = train.get_station_lock_name();
+          #pragma omp critical(station_lock_name)
           {
             if (train.should_load(tick)) {
               should_load = true;
@@ -122,77 +119,51 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
               if (train.is_at_terminal_station()) {
                 // next move should be other direction load
                 train.reverse_train_direction();
-                #pragma omp critical(train.get_station_lock_name())
+                station_lock_name = train.get_station_lock_name();
+                #pragma omp critical(station_lock_name)
                 {
                   train.queue_for_station_use();
                 }
-                train.reset_remaining_time();
+                train.reset_remaining_time_for_load();
               } else {
                 // next move should be wait for track
                 train.state = MOVE;
-
-                #pragma omp critical(train.get_track_lock_name)
+                string track_lock_name = train.get_track_lock_name();
+                #pragma omp critical(track_lock_name)
                 {
-
+                  train.queue_for_track_use();
                 }
-
               }
-
-//              } else {
-//                // otherwise transfer myself to the track queue
-//                int curr_station = global_station_num;
-//                int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
-//                string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
-//                trains[train_id].state = MOVE;
-//                trains[train_id].remaining_time = dist_matrix[curr_station][next_station];
-//
-//                #pragma omp critical(track_lock_name)
-//                {
-//                  track_use[curr_station][next_station].track_q.push(train_id);
-//                }
-//              }
             }
           }
 
         } else {
           // moving or waiting to move
-          int curr_station = global_station_num;
-          int next_station = (*trains[train_id].stations)[trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1)].station_num;
-          string track_lock_name = TRACK_LOCK_PREFIX + to_string(curr_station) + string("-") + to_string(next_station);
-
-          bool should_track = false;
+          bool should_move_on_track = false;
+          string track_lock_name = train.get_track_lock_name();
           #pragma omp critical(track_lock_name)
           {
-            if (track_use[curr_station][next_station].track_q.front() == train_id and track_use[curr_station][next_station].time < tick) {
-              track_use[curr_station][next_station].time = tick;
-              should_track = true;
+            if (train.should_move_on_track(tick)) {
+              train.acknowledge_move_on_track(tick);
+              should_move_on_track = true;
             }
           }
 
-          if (should_track) {
-            assert(trains[train_id].remaining_time > 0);
-            trains[train_id].remaining_time--;
-            if (trains[train_id].remaining_time == 0) {
-              // remove myself from the old track queue since I am done!
+          if (should_move_on_track) {
+            assert(train.remaining_time > 0);
+            train.update_remaining_time();
+            if (train.remaining_time == 0) {
               #pragma omp critical(track_lock_name)
               {
-                assert(track_use[curr_station][next_station].track_q.front() == train_id);
-                track_use[curr_station][next_station].track_q.pop();
+                train.dequeue_from_track_use();
               }
 
-              // I have landed at a station
-              // Enqueue myself into a loading queue
-              trains[train_id].remaining_time = get_loading_time(next_station, station_popularities);
-              trains[train_id].state = LOAD;
-              trains[train_id].local_station_idx = trains[train_id].local_station_idx + ((direction == FORWARD) ? 1 : -1);
-              string station_lock_name = STATION_LOCK_PREFIX + direction_str + to_string(next_station);
+              // Enqueue into a loading queue
+              train.progress_to_load_at_next_station();
+              string station_lock_name = train.get_station_lock_name();
               #pragma omp critical(station_lock_name)
               {
-                if (direction == FORWARD) {
-                  station_use[next_station].forward_load_q.push(train_id);
-                } else {
-                  station_use[next_station].backward_load_q.push(train_id);
-                }
+                train.queue_for_station_use();
               }
             }
           }
