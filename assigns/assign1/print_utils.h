@@ -76,13 +76,7 @@ void print_system_state(vector<train_t>& trains, int current_time) {
   cout << endl;
 }
 
-void print_stations_timings(vector<station_t>& line, string line_name, int num_trains) {
-  bool has_insufficient_data = false;
-  bool has_valid_wait_time = false;
-
-  int total_maxs = 0, total_mins = 0, total_wt = 0;
-  int num_maxs = 0, num_mins = 0, num_waits = 0 ;
-
+void print_station_header(string& line_name) {
   cout << "DEBUG " << line_name << endl;
   cout << "station_num"
        << " | "
@@ -104,28 +98,42 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
        << " | "
        << "max_backward_waiting_time"
        << endl;
+}
+
+void print_station_timings(station_t& station) {
+  cout << station.station_num
+       << " | "
+       << station.station_name
+       << " | "
+       << station.num_forward_waits
+       << " | "
+       << station.total_forward_waiting_time
+       << " | "
+       << station.min_forward_waiting_time
+       << " | "
+       << station.max_forward_waiting_time
+       << " | "
+       << station.num_backward_waits
+       << " | "
+       << station.total_backward_waiting_time
+       << " | "
+       << station.min_backward_waiting_time
+       << " | "
+       << station.max_backward_waiting_time
+       << endl;
+}
+
+void print_stations_timings(vector<station_t>& line, string line_name, int num_trains) {
+  bool has_insufficient_data = false;
+  bool has_valid_wait_time = false;
+
+  int total_maxs = 0, total_mins = 0, total_wt = 0;
+  int num_maxs = 0, num_mins = 0, num_waits = 0 ;
+
+  print_station_header(line_name);
 
   for (station_t& station: line) {
-    cout << station.station_num
-         << " | "
-         << station.station_name
-         << " | "
-         << station.num_forward_waits
-         << " | "
-         << station.total_forward_waiting_time
-         << " | "
-         << station.min_forward_waiting_time
-         << " | "
-         << station.max_forward_waiting_time
-         << " | "
-         << station.num_backward_waits
-         << " | "
-         << station.total_backward_waiting_time
-         << " | "
-         << station.min_backward_waiting_time
-         << " | "
-         << station.max_backward_waiting_time
-         << endl;
+    print_station_timings(station);
 
     if (station.num_forward_waits < 1 or station.num_backward_waits < 1)
       has_insufficient_data = true;
