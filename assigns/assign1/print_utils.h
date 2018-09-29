@@ -76,21 +76,82 @@ void print_system_state(vector<train_t>& trains, int current_time) {
   cout << endl;
 }
 
-void print_stations_timings(vector<station_t>& line, int total_time) {
-  int total_waiting_time = 0, total_longest_time = 0, total_shortest_time = 0;
+void print_stations_timings(vector<station_t>& line, string line_name, int num_trains) {
+  bool has_insufficient_data = false;
+  bool has_valid_wait_time = false;
+
+  int total_maxs = 0, total_mins = 0, total_wt = 0;
+  int num_maxs = 0, num_mins = 0, num_waits = 0 ;
+
   for (station_t& station: line) {
-    total_waiting_time += station.total_waiting_time;
-    total_longest_time += station.max_waiting_time;
-    total_shortest_time += station.min_waiting_time;
+    if (station.num_forward_arrivals < 2 or station.num_backward_arrivals < 2)
+      has_insufficient_data = true;
+    if (station.num_forward_arrivals > 2 or station.num_backward_arrivals > 2)
+      has_valid_wait_time = true;
+
+    // Settle forward
+    if (station.num_forward_arrivals > 1) {
+      num_waits += (station.num_forward_arrivals-1);
+      total_wt += station.total_forward_waiting_time;
+    }
+
+    if (station.max_forward_waiting_time != NINF) {
+      num_maxs++;
+      total_maxs += station.max_forward_waiting_time;
+    }
+
+    if (station.min_forward_waiting_time != INF) {
+      num_mins++;
+      total_mins += station.min_forward_waiting_time;
+    }
+
+    // Settle backward
+    if (station.num_backward_arrivals > 1) {
+      num_waits += (station.num_backward_arrivals-1);
+      total_wt += station.total_backward_waiting_time;
+    }
+
+    if (station.max_backward_waiting_time != NINF) {
+      num_maxs++;
+      total_maxs += station.max_backward_waiting_time;
+    }
+
+    if (station.min_backward_waiting_time != INF) {
+      num_mins++;
+      total_mins += station.min_backward_waiting_time;
+    }
   }
+  float avg_wait = total_wt / float(num_waits);
+  float avg_max = total_maxs / float(num_maxs);
+  float avg_min = total_mins / float(num_mins);
+
   int num_stations = (int) line.size();
-  cout << setprecision(2)
-       << 0.0
-       //       << ((float) total_waiting_time) / (num_stations * )
+  if (!has_valid_wait_time) {
+    cout
+      << "The " << line_name
+      << " line does not have >= 1 station with at least two arrivals."
+      << " Since there is no proper wait time for at least one stations, "
+      << "the statistics cannot be computed properly." << endl;
+    return;
+  }
+  if (has_insufficient_data)
+    cout
+      << "(The "
+      << line_name
+      << " line has >= 1 station(s) without at least two arrivals,"
+      << " so these stations do not have a proper waiting time!"
+      << " The waiting times reported is only for those stations on this line that do.)"
+      << endl;
+  cout << line_name
+       << ": "
+       << num_trains
+       << " trains -> "
+       << setprecision(2)
+       << avg_wait
        << ", "
-       << ((float) total_longest_time) / num_stations
+       << avg_max
        << ", "
-       << ((float) total_shortest_time) / num_stations
+       << avg_min
        << endl;
 }
 

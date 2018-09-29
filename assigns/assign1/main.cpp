@@ -136,14 +136,30 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
             assert(trains[train_id].remaining_time > 0);
 
             // check if first time loading!
-            if (direction == FORWARD and station_use[global_station_num].last_forward_user != train_id) {
+            if (direction == FORWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user != train_id) {
               // Update timings!
-              station_use[global_station_num].last_forward_user = train_id;
-            } else if (direction == BACKWARD and station_use[global_station_num].last_backward_user != train_id) {
-              // Update timings!
-              station_use[global_station_num].last_backward_user = train_id;
-            }
+              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user = train_id;
+              if ((*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival != UNDEFINED) {
+                int latest_wait = tick - (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival;
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].total_forward_waiting_time += latest_wait;
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].min_forward_waiting_time = min((*trains[train_id].stations)[trains[train_id].local_station_idx].min_forward_waiting_time, latest_wait);
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].max_forward_waiting_time = max((*trains[train_id].stations)[trains[train_id].local_station_idx].max_forward_waiting_time, latest_wait);
+              }
+              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_arrival = tick;
+              (*trains[train_id].stations)[trains[train_id].local_station_idx].num_forward_arrivals++;
 
+            } else if (direction == BACKWARD and (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user != train_id) {
+              // Update timings!
+              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user = train_id;
+              if ((*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival != UNDEFINED) {
+                int latest_wait = tick - (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival;
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].total_backward_waiting_time += latest_wait;
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].min_backward_waiting_time = min((*trains[train_id].stations)[trains[train_id].local_station_idx].min_backward_waiting_time, latest_wait);
+                (*trains[train_id].stations)[trains[train_id].local_station_idx].max_backward_waiting_time = max((*trains[train_id].stations)[trains[train_id].local_station_idx].max_backward_waiting_time, latest_wait);
+              }
+              (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_arrival = tick;
+              (*trains[train_id].stations)[trains[train_id].local_station_idx].num_backward_arrivals++;
+            }
 
             trains[train_id].remaining_time--;
             if (trains[train_id].remaining_time == 0) {
@@ -153,11 +169,11 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
                 // remove myself from the old queue since I am done!
                 if (direction == FORWARD) {
                   assert(station_use[global_station_num].forward_load_q.front() == train_id);
-                  station_use[global_station_num].last_forward_user = UNDEFINED;
+                  (*trains[train_id].stations)[trains[train_id].local_station_idx].last_forward_user = UNDEFINED;
                   station_use[global_station_num].forward_load_q.pop();
                 } else {
                   assert(station_use[global_station_num].backward_load_q.front() == train_id);
-                  station_use[global_station_num].last_backward_user = UNDEFINED;
+                  (*trains[train_id].stations)[trains[train_id].local_station_idx].last_backward_user = UNDEFINED;
                   station_use[global_station_num].backward_load_q.pop();
                 }
               }
@@ -247,12 +263,9 @@ void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_l
 
   // Print waiting times
   cout << "Average waiting times:" << endl;
-  cout << "green: " << train_count.g << " trains -> ";
-  print_stations_timings(green_line, N);
-  cout << "yellow: " << train_count.y << " trains -> ";
-  print_stations_timings(yellow_line, N);
-  cout << "blue: " << train_count.b << " trains -> ";
-  print_stations_timings(blue_line, N);
+  print_stations_timings(green_line, "green", train_count.g);
+  print_stations_timings(yellow_line, "yellow", train_count.y);
+  print_stations_timings(blue_line, "blue", train_count.b);
 }
 
 int main() {

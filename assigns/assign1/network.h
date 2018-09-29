@@ -34,10 +34,6 @@ struct train_count_t {
 };
 
 struct station_queue_t {
-  // Last user
-  int last_forward_user = UNKNOWN_TRAIN;
-  int last_backward_user = UNKNOWN_TRAIN;
-
   // Last use times
   int forward_time = -1;
   int backward_time = -1;
@@ -58,11 +54,23 @@ struct track_queue_t {
 struct station_t {
   int station_num;
   string station_name;
-  int last_arrival = UNDEFINED;
-  int num_arrivals = 0;
-  int total_waiting_time = UNDEFINED;
-  int min_waiting_time = INF;
-  int max_waiting_time = NINF;
+
+  // Forward stats
+  // Last user
+  int last_forward_user = UNKNOWN_TRAIN;
+  int last_forward_arrival = UNDEFINED;
+  int num_forward_arrivals = 0;
+  int total_forward_waiting_time = 0;
+  int min_forward_waiting_time = INF;
+  int max_forward_waiting_time = NINF;
+
+  // Backward stats
+  int last_backward_user = UNKNOWN_TRAIN;
+  int last_backward_arrival = UNDEFINED;
+  int num_backward_arrivals = 0;
+  int total_backward_waiting_time = 0;
+  int min_backward_waiting_time = INF;
+  int max_backward_waiting_time = NINF;
 };
 
 struct train_t {
