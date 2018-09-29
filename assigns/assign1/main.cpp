@@ -27,12 +27,6 @@
 
 using namespace std;
 
-int get_loading_time(int i, vector<float>& popularity) {
-  // use the formula and take ceiling because train must stop for at least
-  // that amount but ticks are integers
-  return ceil(popularity[i] * ((rand() % 10) + 1));
-}
-
 train_t prepare_train(vector<station_t>& stations, int i, char line,
                       vector<float>& popularity) {
   int station_idx = (i % 2 == FORWARD) ? 0 : ((int) stations.size()) - 1;
@@ -313,9 +307,6 @@ int main() {
   vector<string> num_trains;
   read_comma_sep_line(cin, num_trains);
   int g = stoi(num_trains[0]), y = stoi(num_trains[1]),  b = stoi(num_trains[1]);
-
-  // Seed for reproducibility
-//  srand(123);
 
   // Include the master thread
   omp_set_num_threads(g+y+b+1);

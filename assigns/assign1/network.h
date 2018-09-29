@@ -73,6 +73,36 @@ struct station_t {
   int max_backward_waiting_time = NINF;
 };
 
+int get_loading_time(int i, vector<float>& popularity) {
+  // use the formula and take ceiling because train must stop for at least
+  // that amount but ticks are integers
+  return ceil(popularity[i] * ((rand() % 10) + 1));
+}
+
+class Train {
+public:
+  char line;
+  int num; // train number for this particular line
+  vector<station_t>& stations;
+  TrainDirection direction;
+  TrainState state;
+  int local_station_num;
+  int remaining_time;
+
+  int start_time; // For printing and debugging purposes
+
+  Train(char line, int num, vector<station_t>& stations, int local_station_num,
+  vector<float>& popularities) :
+  line(line), num(num), stations(stations), state(LOAD) {
+    int num_stations = stations.size();
+    this->direction = (num % 2) ? FORWARD : BACKWARD;
+    this->local_station_num = (num % 2) ? 0 : num_stations-1;
+    int global_station_num = stations[this->local_station_num].station_num;
+    this->remaining_time = get_loading_time(global_station_num, popularities);
+    this->start_time = num/2;
+  };
+};
+
 struct train_t {
   char line;
   int train_num;
