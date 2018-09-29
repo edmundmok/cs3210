@@ -83,7 +83,30 @@ void print_stations_timings(vector<station_t>& line, string line_name, int num_t
   int total_maxs = 0, total_mins = 0, total_wt = 0;
   int num_maxs = 0, num_mins = 0, num_waits = 0 ;
 
+  cout << "DEBUG " << line_name << endl;
+
   for (station_t& station: line) {
+    cout << station.station_num
+         << " | "
+         << station.station_name
+         << " | "
+         << station.num_forward_arrivals
+         << " | "
+         << station.total_forward_waiting_time
+         << " | "
+         << station.min_forward_waiting_time
+         << " | "
+         << station.max_backward_waiting_time
+         << " | "
+         << station.num_backward_arrivals
+         << " | "
+         << station.total_backward_waiting_time
+         << " | "
+         << station.min_forward_waiting_time
+         << " | "
+         << station.max_backward_waiting_time
+         << endl;
+
     if (station.num_forward_arrivals < 2 or station.num_backward_arrivals < 2)
       has_insufficient_data = true;
     if (station.num_forward_arrivals > 2 or station.num_backward_arrivals > 2)
