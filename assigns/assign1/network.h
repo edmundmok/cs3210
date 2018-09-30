@@ -287,6 +287,11 @@ public:
     reset_remaining_time_for_load();
   }
 
+  bool is_actually_moving_on_track() {
+    assert(state == MOVE);
+    return get_track_use().track_q.front() == gnum;
+  }
+
 };
 
 

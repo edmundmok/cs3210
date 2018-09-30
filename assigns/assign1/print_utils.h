@@ -68,7 +68,7 @@ void print_system_state(Trains& trains, int current_tick) {
     // Ignore trains that have not officially started
     if (train.start_time > current_tick) continue;
     cout << train.line << train.lnum << "-s" << train.get_global_station_num();
-    if (train.state == MOVE)
+    if (train.state == MOVE and train.is_actually_moving_on_track())
       cout << "->s" << train.get_global_next_station_num();
     cout << ", ";
   }
