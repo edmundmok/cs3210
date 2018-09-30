@@ -1,0 +1,8 @@
+CS3210 Assignment 1 Part 1 Code
+
+Compilation instructions:
+g++ -std=c++11 main.cpp -fopenmp -o main
+
+Execution instructions:
+- Run ./main < sample.in where sample.in is a file in the same directory containing the input with format specified in assignment
+- OR run ./main and manually input from keyboard
