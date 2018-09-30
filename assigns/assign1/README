@@ -18,6 +18,12 @@ This directory should contain the following files:
 Compilation instructions:
 g++ -std=c++11 main.cpp -fopenmp -O3 -o main
 
+Several test cases are provided, as indicated by their .in extensions.
+Their respective output files when run through the program are also provided,
+using the same name, and indicated by their .out extensions.
+
 Execution instructions:
-- Run ./main < sample.in where sample.in is a file in the same directory containing the input with format specified in assignment
+- Run ./main < testcase1.in where testcase1.in is a file in the same directory
+containing the input with format specified in assignment
+ (e.g. testcase1.in, testcase2.in testcase3.in)
 - OR run ./main and manually input from keyboard
