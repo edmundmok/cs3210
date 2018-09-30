@@ -52,20 +52,24 @@ struct TrainCounts {
   }
 };
 
-struct StationUse {
-  // Last use times
-  int forward_time = -1;
-  int backward_time = -1;
+struct StationUsage {
+  int last_use_time = -1;
+  queue<int> load_queue;
+};
 
-  // Load queues
-  queue<int> forward_load_q;
-  queue<int> backward_load_q;
+struct StationUse {
+
+  StationUsage forward;
+  StationUsage backward;
+
+  StationUsage& get_usage(TrainDirection& direction) {
+    return (direction == FORWARD) ? forward : backward;
+  }
 };
 
 struct TrackUse {
   // Last use time
   int time = -1;
-
   // Track queues
   queue<int> track_q;
 };
@@ -162,9 +166,8 @@ public:
   }
 
   void queue_for_station_use() {
-    StationUse& station_use = get_station_use();
-    if (direction == FORWARD) station_use.forward_load_q.push(gnum);
-    else station_use.backward_load_q.push(gnum);
+    assert(state == LOAD);
+    get_station_use().get_usage(direction).load_queue.push(gnum);
   }
 
   TrackUse& get_track_use() {
@@ -187,17 +190,14 @@ public:
 
   bool should_load(int tick) {
     assert(state == LOAD);
-    StationUse& station_use = get_station_use();
-    return (direction == FORWARD and station_use.forward_load_q.front() == gnum
-            and station_use.forward_time < tick)
-           or (direction == BACKWARD and station_use.backward_load_q.front() == gnum
-               and station_use.backward_time < tick);
+    StationUsage& usage = get_station_use().get_usage(direction);
+    return (usage.load_queue.front() == gnum) and (usage.last_use_time < tick);
   }
 
   void acknowledge_load(int tick) {
-    StationUse& station_use = get_station_use();
-    if (direction == FORWARD) station_use.forward_time = tick;
-    else station_use.backward_time = tick;
+    StationUsage& usage = get_station_use().get_usage(direction);
+    assert(usage.last_use_time < tick);
+    usage.last_use_time = tick;
   }
 
   bool has_door_just_opened() {
@@ -238,14 +238,9 @@ public:
     assert(remaining_time == 0);
     assert(state == LOAD);
 
-    StationUse& station_use = get_station_use();
-    if (direction == FORWARD) {
-      assert(station_use.forward_load_q.front() == gnum);
-      station_use.forward_load_q.pop();
-    } else {
-      assert(station_use.backward_load_q.front() == gnum);
-      station_use.backward_load_q.pop();
-    }
+    StationUsage& usage = get_station_use().get_usage(direction);
+    assert(usage.load_queue.front() == gnum);
+    usage.load_queue.pop();
   }
 
   void dequeue_from_track_use() {
