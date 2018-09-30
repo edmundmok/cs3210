@@ -23,11 +23,10 @@ using namespace std;
 
 struct TrainCounts;
 struct Station;
-struct train_t;
 
 class Train;
-class StationUse;
-class TrackUse;
+struct StationUse;
+struct TrackUse;
 
 typedef vector<Station> Stations;
 typedef vector<vector<int>> AdjMatrix;
@@ -42,10 +41,10 @@ enum TrainState { LOAD, MOVE };
 enum TrainDirection { FORWARD, BACKWARD };
 
 struct TrainCounts {
-  int g;
-  int y;
-  int b;
-  int total;
+  int num_greens;
+  int num_yellows;
+  int num_blues;
+  int num_total;
 };
 
 struct StationUse {
