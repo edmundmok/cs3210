@@ -204,4 +204,12 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
        << endl;
 }
 
+void print_final_stations_timings(Stations& green_line, Stations& yellow_line,
+                                  Stations& blue_line, TrainCounts& train_counts) {
+  cout << "Average waiting times:" << endl;
+  print_stations_timings(green_line, "green", train_counts.num_greens);
+  print_stations_timings(yellow_line, "yellow", train_counts.num_yellows);
+  print_stations_timings(blue_line, "blue", train_counts.num_blues);
+}
+
 #endif //ASSIGN1_PRINT_UTILS_H

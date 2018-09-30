@@ -181,10 +181,7 @@ void run_simulation(int max_tick, TrainCounts& train_counts,
   }
 
   // Print waiting times
-  cout << "Average waiting times:" << endl;
-  print_stations_timings(green_line, "green", train_counts.num_greens);
-  print_stations_timings(yellow_line, "yellow", train_counts.num_yellows);
-  print_stations_timings(blue_line, "blue", train_counts.num_blues);
+  print_final_stations_timings(green_line, yellow_line, blue_line, train_counts);
 }
 
 int main() {
