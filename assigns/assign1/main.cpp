@@ -28,7 +28,7 @@ void simulate_train_load(Train& train, int tick) {
   bool should_load = false;
   // check if allowed to load now
   string station_lock_name = train.get_station_lock_name();
-#pragma omp critical(station_lock_name)
+  #pragma omp critical(station_lock_name)
   {
     if (train.should_load(tick)) {
       should_load = true;
@@ -50,7 +50,7 @@ void simulate_train_load(Train& train, int tick) {
       // update timings
       train.update_station_wait_times_as_departure(tick);
 
-#pragma omp critical(station_lock_name)
+      #pragma omp critical(station_lock_name)
       {
         // remove myself from the old queue since I am done!
         train.remove_as_station_user();
@@ -61,7 +61,7 @@ void simulate_train_load(Train& train, int tick) {
         // next move should be other direction load
         train.reverse_train_direction();
         station_lock_name = train.get_station_lock_name();
-#pragma omp critical(station_lock_name)
+        #pragma omp critical(station_lock_name)
         {
           train.queue_for_station_use();
         }
@@ -70,7 +70,7 @@ void simulate_train_load(Train& train, int tick) {
         // next move should be wait for track
         train.state = MOVE;
         string track_lock_name = train.get_track_lock_name();
-#pragma omp critical(track_lock_name)
+        #pragma omp critical(track_lock_name)
         {
           train.queue_for_track_use();
         }
@@ -84,7 +84,7 @@ void simulate_train_move(Train& train, int tick) {
   // moving or waiting to move
   bool should_move_on_track = false;
   string track_lock_name = train.get_track_lock_name();
-#pragma omp critical(track_lock_name)
+  #pragma omp critical(track_lock_name)
   {
     if (train.should_move_on_track(tick)) {
       train.acknowledge_move_on_track(tick);
@@ -96,7 +96,7 @@ void simulate_train_move(Train& train, int tick) {
     assert(train.remaining_time > 0);
     train.update_remaining_time();
     if (train.remaining_time == 0) {
-#pragma omp critical(track_lock_name)
+      #pragma omp critical(track_lock_name)
       {
         train.dequeue_from_track_use();
       }
@@ -104,7 +104,7 @@ void simulate_train_move(Train& train, int tick) {
       // Enqueue into a loading queue
       train.progress_to_load_at_next_station();
       string station_lock_name = train.get_station_lock_name();
-#pragma omp critical(station_lock_name)
+      #pragma omp critical(station_lock_name)
       {
         train.queue_for_station_use();
       }
