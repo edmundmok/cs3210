@@ -24,7 +24,7 @@
 
 using namespace std;
 
-void run_simulation(int N, TrainCounts& train_count, Stations& blue_line,
+void run_simulation(int N, TrainCounts& train_counts, Stations& blue_line,
                     Stations& yellow_line, Stations& green_line,
                     Popularities& station_popularities,
                     AdjMatrix& dist_matrix,
@@ -40,29 +40,29 @@ void run_simulation(int N, TrainCounts& train_count, Stations& blue_line,
 
   // assign green line trains
   int j=0;
-  for (int i=0; i<train_count.num_greens; i++, j++) {
+  for (int i=0; i<train_counts.num_greens; i++, j++) {
     trains.push_back(Train(GREEN, i, j, green_line, dist_matrix, station_popularities,
                            station_use, track_use));
     trains[j].queue_for_station_use();
   }
 
   // assign yellow line trains
-  for (int i=0; i<train_count.num_yellows; i++, j++) {
+  for (int i=0; i<train_counts.num_yellows; i++, j++) {
     trains.push_back(Train(YELLOW, i, j, yellow_line, dist_matrix, station_popularities,
                            station_use, track_use));
     trains[j].queue_for_station_use();
   }
 
   // assign blue line trains
-  for (int i=0; i<train_count.num_blues; i++, j++) {
+  for (int i=0; i<train_counts.num_blues; i++, j++) {
     trains.push_back(Train(BLUE, i, j, blue_line, dist_matrix, station_popularities,
                            station_use, track_use));
     trains[j].queue_for_station_use();
   }
 
-  assert(trains.size() == train_count.num_total);
+  assert(trains.size() == train_counts.num_total);
 
-  #pragma omp parallel num_threads(train_count.num_total + 1)
+  #pragma omp parallel num_threads(train_counts.num_total + 1)
   {
     // master will occupy thread_id = 0, so offset all workers by 1
     int thread_id = omp_get_thread_num();
@@ -179,9 +179,9 @@ void run_simulation(int N, TrainCounts& train_count, Stations& blue_line,
 
   // Print waiting times
   cout << "Average waiting times:" << endl;
-  print_stations_timings(green_line, "green", train_count.num_greens);
-  print_stations_timings(yellow_line, "yellow", train_count.num_yellows);
-  print_stations_timings(blue_line, "blue", train_count.num_blues);
+  print_stations_timings(green_line, "green", train_counts.num_greens);
+  print_stations_timings(yellow_line, "yellow", train_counts.num_yellows);
+  print_stations_timings(blue_line, "blue", train_counts.num_blues);
 }
 
 int main() {
@@ -229,20 +229,13 @@ int main() {
     num_yellows = stoi(num_trains[1]),
     num_blues = stoi(num_trains[2]);
 
-  int num_total = num_greens + num_yellows + num_blues;
+  TrainCounts train_counts(num_greens, num_yellows, num_blues);
 
   // Include the master thread (+1 from total trains)
-  omp_set_num_threads(num_total + 1);
-
-  TrainCounts train_count = {
-    .num_greens = num_greens,
-    .num_yellows = num_yellows,
-    .num_blues = num_blues,
-    .num_total = num_total
-  };
+  omp_set_num_threads(train_counts.num_total + 1);
 
   // Run simulation
-  run_simulation(N, train_count, blue_line, yellow_line, green_line,
+  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
                  station_popularities, dist_matrix, station_use, track_use);
 
   return 0;

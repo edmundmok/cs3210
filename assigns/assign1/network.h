@@ -45,6 +45,11 @@ struct TrainCounts {
   int num_yellows;
   int num_blues;
   int num_total;
+
+  TrainCounts(int num_greens, int num_yellows, int num_blues) :
+    num_greens(num_greens), num_yellows(num_yellows), num_blues(num_blues) {
+    num_total = num_greens + num_yellows + num_blues;
+  }
 };
 
 struct StationUse {
