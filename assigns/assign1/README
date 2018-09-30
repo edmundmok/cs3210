@@ -1,5 +1,20 @@
 CS3210 Assignment 1 Part 1 Code
 
+This directory should contain the following files:
+1. README
+2. a1_report.pdf
+3. main.cpp
+4. helpers.h
+5. network.h
+6. print_utils.h
+7. read_utils.h
+8. testcase1.in
+9. testcase1.out
+10. testcase2.in
+11. testcase2.out
+12. testcase3.in
+13. testcase3.out
+
 Compilation instructions:
 g++ -std=c++11 main.cpp -fopenmp -O3 -o main
 
