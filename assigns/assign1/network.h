@@ -95,12 +95,6 @@ struct Station {
   }
 };
 
-int get_loading_time(int i, Popularities& popularity) {
-  // use the formula and take ceiling because train must stop for at least
-  // that amount but ticks are integers
-  return ceil(popularity[i] * ((rand() % 10) + 1));
-}
-
 class Train {
 public:
   char line;
@@ -123,13 +117,12 @@ public:
 
   Train(char line, int lnum, int gnum, Stations& stations,
         AdjMatrix& dist_matrix, Popularities& popularities,
-        StationUses& station_use, TrackUses& track_uses) :
+        StationUses& station_uses, TrackUses& track_uses) :
   line(line), lnum(lnum), gnum(gnum), stations(stations), dist_matrix(dist_matrix),
-  state(LOAD), station_popularities(popularities), station_uses(station_use),
+  state(LOAD), station_popularities(popularities), station_uses(station_uses),
   track_uses(track_uses) {
-    int num_stations = stations.size();
     direction = (lnum % 2 == 0) ? FORWARD : BACKWARD;
-    local_station_num = (lnum % 2 == 0) ? 0 : num_stations-1;
+    local_station_num = (lnum % 2 == 0) ? 0 : stations.size() - 1;
     int global_station_num = get_global_station_num();
     start_time = lnum/2;
     reset_remaining_time_for_load();
@@ -271,8 +264,14 @@ public:
     direction = (direction == FORWARD) ? BACKWARD : FORWARD;
   }
 
+  int generate_random_loading_time() {
+    // use the formula and take ceiling because train must stop for at least
+    // that amount but ticks are integers
+    return ceil(station_popularities[get_global_station_num()] * ((rand() % 10) + 1));
+  }
+
   void reset_remaining_time_for_load() {
-    remaining_time = get_loading_time(get_global_station_num(), station_popularities);
+    remaining_time = generate_random_loading_time();
   }
 
   bool should_move_on_track(int tick) {
