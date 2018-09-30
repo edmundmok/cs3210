@@ -67,18 +67,20 @@ void run_simulation(int max_tick, TrainCounts& train_counts,
     int thread_id = omp_get_thread_num();
     int train_id = thread_id-1;
 
+    // Run for max_tick number of times
     for (int tick=0; tick<max_tick; tick++) {
-      // Let master print out the current state of the system
+
+      // First let master print out the current state of the system
       #pragma omp master
       {
-//        print_trains(trains);
         print_system_state(trains, tick);
       }
 
-      // Let master finish before all trains make their moves
+      // Let master finish printing before all trains make their moves
       #pragma omp barrier
 
-      // do some parallel work here
+      // All trains make their move for this tick
+      // (except master thread who does not own a train)
       if (thread_id != MASTER_THREAD) {
         Train& train = trains[train_id];
         assert(train.gnum == train_id);

@@ -62,12 +62,12 @@ void print_trains(Trains& trains) {
   }
 }
 
-void print_system_state(Trains& trains, int current_time) {
-  cout << current_time << ": ";
+void print_system_state(Trains& trains, int current_tick) {
+  cout << current_tick << ": ";
   for (Train& train: trains) {
-    if (train.start_time > current_time) continue;
-    int global_station_num = train.get_global_station_num();
-    cout << train.line << train.lnum << "-s" << global_station_num;
+    // Ignore trains that have not officially started
+    if (train.start_time > current_tick) continue;
+    cout << train.line << train.lnum << "-s" << train.get_global_station_num();
     if (train.state == MOVE)
       cout << "->s" << train.get_global_next_station_num();
     cout << ", ";
