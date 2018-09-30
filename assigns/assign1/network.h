@@ -76,7 +76,7 @@ struct TrackUse {
 
 struct StationStats {
   int last_user = UNKNOWN_TRAIN;
-  int last_arrival = UNDEFINED;
+  int last_door_close = UNDEFINED;
   int num_waits = 0;
   int total_wait_time = 0;
   int min_wait_time = INF;
@@ -204,17 +204,17 @@ public:
     return get_station().get_stats(direction).last_user != gnum;
   }
 
-  bool is_first_arrival() {
-    return get_station().get_stats(direction).last_arrival == UNDEFINED;
+  bool is_first_door_open() {
+    return get_station().get_stats(direction).last_door_close == UNDEFINED;
   }
 
-  void update_station_wait_times_as_arrival(int tick) {
+  void update_station_wait_times_for_door_open(int tick) {
     StationStats& stats = get_station().get_stats(direction);
     stats.last_user = gnum;
 
-    if (is_first_arrival()) return;
+    if (is_first_door_open()) return;
 
-    int latest_wait = tick - stats.last_arrival;
+    int latest_wait = tick - stats.last_door_close;
     stats.total_wait_time += latest_wait;
     stats.num_waits++;
     stats.min_wait_time = min(stats.min_wait_time, latest_wait);
@@ -223,9 +223,9 @@ public:
 
   void update_remaining_time() { remaining_time--; }
 
-  void update_station_wait_times_as_departure(int tick) {
+  void update_station_wait_times_for_door_close(int tick) {
     StationStats& stats = get_station().get_stats(direction);
-    stats.last_arrival = tick;
+    stats.last_door_close = tick;
   }
 
   void remove_as_station_user() {

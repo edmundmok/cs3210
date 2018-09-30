@@ -44,42 +44,43 @@ void simulate_train_load(Train& train, int tick) {
 
   // check if first time loading! (door just opened!)
   if (train.has_door_just_opened()) {
-    train.update_station_wait_times_as_arrival(tick);
+    train.update_station_wait_times_for_door_open(tick);
   }
 
   train.update_remaining_time();
+  if (train.remaining_time > 0) return;
+  assert(train.remaining_time == 0);
 
-  if (train.remaining_time == 0) {
-    // update timings
-    train.update_station_wait_times_as_departure(tick);
+  // update timings
+  train.update_station_wait_times_for_door_close(tick);
 
+  #pragma omp critical(station_lock_name)
+  {
+    // remove myself from the old queue since I am done!
+    train.remove_as_station_user();
+    train.dequeue_from_station_use();
+  }
+
+  if (train.is_at_terminal_station()) {
+    // next move should be other direction load
+    train.reverse_train_direction();
+    station_lock_name = train.get_station_lock_name();
     #pragma omp critical(station_lock_name)
     {
-      // remove myself from the old queue since I am done!
-      train.remove_as_station_user();
-      train.dequeue_from_station_use();
+      train.queue_for_station_use();
     }
-
-    if (train.is_at_terminal_station()) {
-      // next move should be other direction load
-      train.reverse_train_direction();
-      station_lock_name = train.get_station_lock_name();
-      #pragma omp critical(station_lock_name)
-      {
-        train.queue_for_station_use();
-      }
-      train.reset_remaining_time_for_load();
-    } else {
-      // next move should be wait for track
-      train.state = MOVE;
-      string track_lock_name = train.get_track_lock_name();
-      #pragma omp critical(track_lock_name)
-      {
-        train.queue_for_track_use();
-      }
-      train.reset_remaining_time_for_track();
+    train.reset_remaining_time_for_load();
+  } else {
+    // next move should be wait for track
+    train.state = MOVE;
+    string track_lock_name = train.get_track_lock_name();
+    #pragma omp critical(track_lock_name)
+    {
+      train.queue_for_track_use();
     }
+    train.reset_remaining_time_for_track();
   }
+
 }
 
 void simulate_train_move(Train& train, int tick) {
