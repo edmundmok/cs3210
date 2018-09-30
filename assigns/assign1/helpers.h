@@ -11,11 +11,13 @@
 
 using namespace std;
 
-bool is_terminal_station(AdjMatrix& M, int station_idx,
-                         unordered_set<int>& stations) {
+bool is_terminal_station_for_line(AdjMatrix &dist_matrix, int station_idx,
+                                  unordered_set<int> &stations) {
   int count = 0;
-  for (int i=0; i<M.size(); i++) {
-    if (stations.find(i) != stations.end() && M[station_idx][i] > 0) {
+  for (int i=0; i<dist_matrix.size(); i++) {
+    bool has_station = stations.find(i) != stations.end(),
+      has_track = dist_matrix[station_idx][i] > 0;
+    if (has_station and has_track) {
       count++;
     }
     if (count > 1) return false;
@@ -23,45 +25,39 @@ bool is_terminal_station(AdjMatrix& M, int station_idx,
   return true;
 }
 
-int get_neighbour(AdjMatrix& M, int curr,
+int get_neighbour(AdjMatrix& dist_matrix, int curr,
                   unordered_set<int>& stations, unordered_set<int>& visited) {
-  for (int i=0; i<M.size(); i++) {
-    if ((visited.find(i) == visited.end())
-        && (stations.find(i) != stations.end())
-        && (M[curr][i])) {
+  for (int i=0; i<dist_matrix.size(); i++) {
+    bool has_visited = visited.find(i) != visited.end(),
+      has_station = stations.find(i) != stations.end(),
+      has_track = dist_matrix[curr][i] > 0;
+    if ((not has_visited) and has_station and has_track) {
       return i;
     }
   }
   return -1;
 }
 
-void line_up_stations(AdjMatrix& M, vector<string>& stations_strs,
-                      unordered_set<int>& stations,
-                      Stations& lined_stations) {
+void line_up_stations(AdjMatrix& dist_matrix, vector<string>& stations_strs,
+                      unordered_set<int>& stations, Stations& lined_stations) {
   // first find the starting point
   int curr = -1;
   for (int station_idx: stations) {
-    if (is_terminal_station(M, station_idx, stations)) {
+    if (is_terminal_station_for_line(dist_matrix, station_idx, stations)) {
       curr = station_idx;
       break;
     }
   }
 
-  Station first_station = {};
-  first_station.station_num = curr;
-  first_station.station_name = stations_strs[curr];
-
+  Station first_station(curr, stations_strs[curr]);
   lined_stations.push_back(first_station);
-  unordered_set<int> visited = {curr};
+  unordered_set<int> visited = { curr };
 
   // go down the line from the starting point
   while (true) {
-    curr = get_neighbour(M, curr, stations, visited);
+    curr = get_neighbour(dist_matrix, curr, stations, visited);
     if (curr == -1) return;
-
-    Station curr_station = {};
-    curr_station.station_num = curr;
-    curr_station.station_name = stations_strs[curr];
+    Station curr_station(curr, stations_strs[curr]);
     visited.insert(curr);
     lined_stations.push_back(curr_station);
   }

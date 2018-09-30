@@ -77,10 +77,13 @@ struct StationStats {
 struct Station {
 
   int station_num;
-  string station_name;
+  string& station_name;
 
   StationStats forward;
   StationStats backward;
+
+  Station(int station_num, string& station_name) :
+    station_num(station_num), station_name(station_name) {}
 
   StationStats& get_stats(TrainDirection direction) {
     return (direction == FORWARD) ? forward : backward;

@@ -199,12 +199,6 @@ int main() {
   // setup dist_matrix
   AdjMatrix dist_matrix(S, vector<int>(S));
 
-  // Global station lock + queue vector
-  StationUses station_use(S);
-
-  // Global track lock + queue vector
-  TrackUses track_use(S, vector<TrackUse>(S));
-
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> dist_matrix[i][j];
@@ -212,6 +206,13 @@ int main() {
   }
   cin.ignore(1, '\n');
 
+  // Global station lock + queue vector
+  StationUses station_use(S);
+
+  // Global track lock + queue vector
+  TrackUses track_use(S, vector<TrackUse>(S));
+
+  // Read station popularities
   Popularities station_popularities(S);
   read_popularities(cin, station_popularities);
 
