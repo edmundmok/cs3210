@@ -24,12 +24,12 @@
 
 using namespace std;
 
-void run_simulation(int N, train_count_t& train_count, Stations& blue_line,
+void run_simulation(int N, TrainCounts& train_count, Stations& blue_line,
                     Stations& yellow_line, Stations& green_line,
                     Popularities& station_popularities,
-                    vector<vector<int>>& dist_matrix,
-                    vector<station_queue_t>& station_use,
-                    vector<vector<track_queue_t>>& track_use) {
+                    AdjMatrix& dist_matrix,
+                    StationUses& station_use,
+                    TrackUses& track_use) {
 
   // assign trains to thread_ids
   Trains trains;
@@ -198,13 +198,13 @@ int main() {
 
   // Read adjacency matrix of network and
   // setup dist_matrix
-  vector<vector<int>> dist_matrix(S, vector<int>(S));
+  AdjMatrix dist_matrix(S, vector<int>(S));
 
   // Global station lock + queue vector
-  vector<station_queue_t> station_use(S);
+  StationUses station_use(S);
 
   // Global track lock + queue vector
-  vector<vector<track_queue_t>> track_use(S, vector<track_queue_t>(S));
+  TrackUses track_use(S, vector<TrackUse>(S));
 
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
@@ -230,7 +230,7 @@ int main() {
   // Include the master thread
   omp_set_num_threads(g+y+b+1);
 
-  train_count_t train_count = {
+  TrainCounts train_count = {
     .g = g,
     .y = y,
     .b = b,

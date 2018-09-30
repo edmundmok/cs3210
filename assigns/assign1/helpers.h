@@ -11,7 +11,7 @@
 
 using namespace std;
 
-bool is_terminal_station(vector<vector<int>>& M, int station_idx,
+bool is_terminal_station(AdjMatrix& M, int station_idx,
                          unordered_set<int>& stations) {
   int count = 0;
   for (int i=0; i<M.size(); i++) {
@@ -23,7 +23,7 @@ bool is_terminal_station(vector<vector<int>>& M, int station_idx,
   return true;
 }
 
-int get_neighbour(vector<vector<int>>& M, int curr,
+int get_neighbour(AdjMatrix& M, int curr,
                   unordered_set<int>& stations, unordered_set<int>& visited) {
   for (int i=0; i<M.size(); i++) {
     if ((visited.find(i) == visited.end())
@@ -35,7 +35,7 @@ int get_neighbour(vector<vector<int>>& M, int curr,
   return -1;
 }
 
-void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
+void line_up_stations(AdjMatrix& M, vector<string>& stations_strs,
                       unordered_set<int>& stations,
                       Stations& lined_stations) {
   // first find the starting point
@@ -47,7 +47,7 @@ void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
     }
   }
 
-  station_t first_station = {};
+  Station first_station = {};
   first_station.station_num = curr;
   first_station.station_name = stations_strs[curr];
 
@@ -59,7 +59,7 @@ void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
     curr = get_neighbour(M, curr, stations, visited);
     if (curr == -1) return;
 
-    station_t curr_station = {};
+    Station curr_station = {};
     curr_station.station_num = curr;
     curr_station.station_name = stations_strs[curr];
     visited.insert(curr);

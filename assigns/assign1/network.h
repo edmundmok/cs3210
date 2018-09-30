@@ -21,28 +21,34 @@
 
 using namespace std;
 
-struct train_count_t;
-struct station_t;
+struct TrainCounts;
+struct Station;
 struct train_t;
 
 class Train;
+class StationUse;
+class TrackUse;
 
-typedef vector<station_t> Stations;
+typedef vector<Station> Stations;
+typedef vector<vector<int>> AdjMatrix;
 typedef vector<Train> Trains;
 typedef vector<float> Popularities;
+
+typedef vector<StationUse> StationUses;
+typedef vector<vector<TrackUse>> TrackUses;
 
 enum TrainState { LOAD, MOVE };
 
 enum TrainDirection { FORWARD, BACKWARD };
 
-struct train_count_t {
+struct TrainCounts {
   int g;
   int y;
   int b;
   int total;
 };
 
-struct station_queue_t {
+struct StationUse {
   // Last use times
   int forward_time = -1;
   int backward_time = -1;
@@ -52,7 +58,7 @@ struct station_queue_t {
   queue<int> backward_load_q;
 };
 
-struct track_queue_t {
+struct TrackUse {
   // Last use time
   int time = -1;
 
@@ -60,7 +66,7 @@ struct track_queue_t {
   queue<int> track_q;
 };
 
-struct station_t {
+struct Station {
   int station_num;
   string station_name;
 
@@ -94,7 +100,7 @@ public:
   int lnum; // train number for this particular line
   int gnum;
 
-  vector<vector<int>>& dist_matrix;
+  AdjMatrix& dist_matrix;
   Stations& stations;
   Popularities& station_popularities;
 
@@ -103,15 +109,14 @@ public:
   int local_station_num;
   int remaining_time;
 
-  vector<station_queue_t>& station_uses;
-  vector<vector<track_queue_t>>& track_uses;
+  StationUses& station_uses;
+  TrackUses& track_uses;
 
   int start_time; // For printing and debugging purposes
 
   Train(char line, int lnum, int gnum, Stations& stations,
-        vector<vector<int>>& dist_matrix, Popularities& popularities,
-        vector<station_queue_t>& station_use,
-        vector<vector<track_queue_t>>& track_uses) :
+        AdjMatrix& dist_matrix, Popularities& popularities,
+        StationUses& station_use, TrackUses& track_uses) :
   line(line), lnum(lnum), gnum(gnum), stations(stations), dist_matrix(dist_matrix),
   state(LOAD), station_popularities(popularities), station_uses(station_use),
   track_uses(track_uses) {
@@ -148,21 +153,21 @@ public:
            + "-" + to_string(next_station);
   }
 
-  station_t& get_station() {
+  Station& get_station() {
     return stations[local_station_num];
   }
 
-  station_queue_t& get_station_use() {
+  StationUse& get_station_use() {
     return station_uses[get_global_station_num()];
   }
 
   void queue_for_station_use() {
-    station_queue_t& station_use = get_station_use();
+    StationUse& station_use = get_station_use();
     if (direction == FORWARD) station_use.forward_load_q.push(gnum);
     else station_use.backward_load_q.push(gnum);
   }
 
-  track_queue_t& get_track_use() {
+  TrackUse& get_track_use() {
     assert(state == MOVE);
     int curr_station = get_global_station_num(),
       next_station = get_global_next_station_num();
@@ -170,7 +175,7 @@ public:
   }
 
   void queue_for_track_use() {
-    track_queue_t& track_use = get_track_use();
+    TrackUse& track_use = get_track_use();
     track_use.track_q.push(gnum);
   }
 
@@ -189,7 +194,7 @@ public:
 
   bool should_load(int tick) {
     assert(state == LOAD);
-    station_queue_t& station_use = get_station_use();
+    StationUse& station_use = get_station_use();
     return (direction == FORWARD and station_use.forward_load_q.front() == gnum
             and station_use.forward_time < tick)
            or (direction == BACKWARD and station_use.backward_load_q.front() == gnum
@@ -197,25 +202,25 @@ public:
   }
 
   void acknowledge_load(int tick) {
-    station_queue_t& station_use = get_station_use();
+    StationUse& station_use = get_station_use();
     if (direction == FORWARD) station_use.forward_time = tick;
     else station_use.backward_time = tick;
   }
 
   bool has_door_just_opened() {
-    station_t& station = get_station();
+    Station& station = get_station();
     return (direction == FORWARD and station.last_forward_user != gnum)
       or (direction == BACKWARD and station.last_backward_user != gnum);
   }
 
   bool is_first_arrival() {
-    station_t& station = get_station();
+    Station& station = get_station();
     return (direction == FORWARD and station.last_forward_arrival == UNDEFINED)
       or (direction == BACKWARD and station.last_backward_arrival == UNDEFINED);
   }
 
   void update_station_wait_times_as_arrival(int tick) {
-    station_t& station = get_station();
+    Station& station = get_station();
     if (direction == FORWARD) {
       station.last_forward_user = gnum;
     } else {
@@ -242,13 +247,13 @@ public:
   void update_remaining_time() { remaining_time--; }
 
   void update_station_wait_times_as_departure(int tick) {
-    station_t& station = get_station();
+    Station& station = get_station();
     if (direction == FORWARD) station.last_forward_arrival = tick;
     else station.last_backward_arrival = tick;
   }
 
   void remove_as_station_user() {
-    station_t& station = get_station();
+    Station& station = get_station();
     if (direction == FORWARD) {
       assert(station.last_forward_user == gnum);
       station.last_forward_user = UNDEFINED;
@@ -262,7 +267,7 @@ public:
     assert(remaining_time == 0);
     assert(state == LOAD);
 
-    station_queue_t& station_use = get_station_use();
+    StationUse& station_use = get_station_use();
     if (direction == FORWARD) {
       assert(station_use.forward_load_q.front() == gnum);
       station_use.forward_load_q.pop();
@@ -274,7 +279,7 @@ public:
 
   void dequeue_from_track_use() {
     assert(state == MOVE);
-    track_queue_t& track_use = get_track_use();
+    TrackUse& track_use = get_track_use();
     assert(track_use.track_q.front() == gnum);
     track_use.track_q.pop();
   }
@@ -293,12 +298,12 @@ public:
   }
 
   bool should_move_on_track(int tick) {
-    track_queue_t& track_use = get_track_use();
+    TrackUse& track_use = get_track_use();
     return (track_use.track_q.front() == gnum) and (track_use.time < tick);
   }
 
   void acknowledge_move_on_track(int tick) {
-    track_queue_t& track_use = get_track_use();
+    TrackUse& track_use = get_track_use();
     track_use.time = tick;
   }
 

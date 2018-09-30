@@ -99,7 +99,7 @@ void print_station_header(string& line_name) {
        << endl;
 }
 
-void print_station_timings(station_t& station) {
+void print_station_timings(Station& station) {
   cout << station.station_num
        << " | "
        << station.station_name
@@ -131,7 +131,7 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
 
   print_station_header(line_name);
 
-  for (station_t& station: line) {
+  for (Station& station: line) {
     print_station_timings(station);
 
     if (station.num_forward_waits < 1 or station.num_backward_waits < 1)

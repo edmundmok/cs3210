@@ -47,7 +47,7 @@ void read_popularities(istream& is, Popularities& popularities) {
 void read_stations_for_line(istream& is,
                             vector<string>& stations_str,
                             unordered_map<string, int>& stations_map,
-                            vector<vector<int>>& dist_matrix,
+                            AdjMatrix& dist_matrix,
                             Stations& line) {
   unordered_set<int> stations;
   read_stations(is, stations_map, stations);
