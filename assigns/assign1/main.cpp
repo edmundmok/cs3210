@@ -24,92 +24,97 @@
 
 using namespace std;
 
-void simulate_train(Train& train, int tick) {
-  if (train.state == LOAD) {
-    bool should_load = false;
-    // check if allowed to load now
-    string station_lock_name = train.get_station_lock_name();
+void simulate_train_load(Train& train, int tick) {
+  bool should_load = false;
+  // check if allowed to load now
+  string station_lock_name = train.get_station_lock_name();
 #pragma omp critical(station_lock_name)
-    {
-      if (train.should_load(tick)) {
-        should_load = true;
-        train.acknowledge_load(tick);
-      }
+  {
+    if (train.should_load(tick)) {
+      should_load = true;
+      train.acknowledge_load(tick);
+    }
+  }
+
+  if (should_load) {
+    assert(train.remaining_time > 0);
+
+    // check if first time loading! (door just opened!)
+    if (train.has_door_just_opened()) {
+      train.update_station_wait_times_as_arrival(tick);
     }
 
-    if (should_load) {
-      assert(train.remaining_time > 0);
+    train.update_remaining_time();
 
-      // check if first time loading! (door just opened!)
-      if (train.has_door_just_opened()) {
-        train.update_station_wait_times_as_arrival(tick);
-      }
-
-      train.update_remaining_time();
-
-      if (train.remaining_time == 0) {
-        // update timings
-        train.update_station_wait_times_as_departure(tick);
+    if (train.remaining_time == 0) {
+      // update timings
+      train.update_station_wait_times_as_departure(tick);
 
 #pragma omp critical(station_lock_name)
-        {
-          // remove myself from the old queue since I am done!
-          train.remove_as_station_user();
-          train.dequeue_from_station_use();
-        }
-
-        if (train.is_at_terminal_station()) {
-          // next move should be other direction load
-          train.reverse_train_direction();
-          station_lock_name = train.get_station_lock_name();
-#pragma omp critical(station_lock_name)
-          {
-            train.queue_for_station_use();
-          }
-          train.reset_remaining_time_for_load();
-        } else {
-          // next move should be wait for track
-          train.state = MOVE;
-          string track_lock_name = train.get_track_lock_name();
-#pragma omp critical(track_lock_name)
-          {
-            train.queue_for_track_use();
-          }
-          train.reset_remaining_time_for_track();
-        }
+      {
+        // remove myself from the old queue since I am done!
+        train.remove_as_station_user();
+        train.dequeue_from_station_use();
       }
-    }
-  } else {
-    // moving or waiting to move
-    bool should_move_on_track = false;
-    string track_lock_name = train.get_track_lock_name();
-#pragma omp critical(track_lock_name)
-    {
-      if (train.should_move_on_track(tick)) {
-        train.acknowledge_move_on_track(tick);
-        should_move_on_track = true;
-      }
-    }
 
-    if (should_move_on_track) {
-      assert(train.remaining_time > 0);
-      train.update_remaining_time();
-      if (train.remaining_time == 0) {
-#pragma omp critical(track_lock_name)
-        {
-          train.dequeue_from_track_use();
-        }
-
-        // Enqueue into a loading queue
-        train.progress_to_load_at_next_station();
-        string station_lock_name = train.get_station_lock_name();
+      if (train.is_at_terminal_station()) {
+        // next move should be other direction load
+        train.reverse_train_direction();
+        station_lock_name = train.get_station_lock_name();
 #pragma omp critical(station_lock_name)
         {
           train.queue_for_station_use();
         }
+        train.reset_remaining_time_for_load();
+      } else {
+        // next move should be wait for track
+        train.state = MOVE;
+        string track_lock_name = train.get_track_lock_name();
+#pragma omp critical(track_lock_name)
+        {
+          train.queue_for_track_use();
+        }
+        train.reset_remaining_time_for_track();
       }
     }
   }
+}
+
+void simulate_train_move(Train& train, int tick) {
+  // moving or waiting to move
+  bool should_move_on_track = false;
+  string track_lock_name = train.get_track_lock_name();
+#pragma omp critical(track_lock_name)
+  {
+    if (train.should_move_on_track(tick)) {
+      train.acknowledge_move_on_track(tick);
+      should_move_on_track = true;
+    }
+  }
+
+  if (should_move_on_track) {
+    assert(train.remaining_time > 0);
+    train.update_remaining_time();
+    if (train.remaining_time == 0) {
+#pragma omp critical(track_lock_name)
+      {
+        train.dequeue_from_track_use();
+      }
+
+      // Enqueue into a loading queue
+      train.progress_to_load_at_next_station();
+      string station_lock_name = train.get_station_lock_name();
+#pragma omp critical(station_lock_name)
+      {
+        train.queue_for_station_use();
+      }
+    }
+  }
+}
+
+void simulate_train(Train& train, int tick) {
+  if (train.state == LOAD) simulate_train_load(train, tick);
+  else simulate_train_move(train, tick);
 }
 
 void run_simulation(int max_tick, TrainCounts& train_counts,
