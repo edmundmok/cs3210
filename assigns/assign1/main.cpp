@@ -24,11 +24,10 @@
 
 using namespace std;
 
-void run_simulation(int N, TrainCounts& train_counts, Stations& blue_line,
-                    Stations& yellow_line, Stations& green_line,
-                    Popularities& station_popularities,
-                    AdjMatrix& dist_matrix,
-                    StationUses& station_use,
+void run_simulation(int max_tick, TrainCounts& train_counts,
+                    Stations& blue_line, Stations& yellow_line,
+                    Stations& green_line, Popularities& station_popularities,
+                    AdjMatrix& dist_matrix, StationUses& station_use,
                     TrackUses& track_use) {
 
   // assign trains to thread_ids
@@ -68,7 +67,7 @@ void run_simulation(int N, TrainCounts& train_counts, Stations& blue_line,
     int thread_id = omp_get_thread_num();
     int train_id = thread_id-1;
 
-    for (int tick=0; tick<N; tick++) {
+    for (int tick=0; tick<max_tick; tick++) {
       // Let master print out the current state of the system
       #pragma omp master
       {
