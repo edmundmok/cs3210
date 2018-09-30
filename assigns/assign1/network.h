@@ -69,7 +69,7 @@ struct StationUse {
 
 struct TrackUse {
   // Last use time
-  int time = -1;
+  int last_use_time = -1;
   // Track queues
   queue<int> track_q;
 };
@@ -262,7 +262,8 @@ public:
   int generate_random_loading_time() {
     // use the formula and take ceiling because train must stop for at least
     // that amount but ticks are integers
-    return ceil(station_popularities[get_global_station_num()] * ((rand() % 10) + 1));
+    return ceil(station_popularities[get_global_station_num()]
+                * ((rand() % 10) + 1));
   }
 
   void reset_remaining_time_for_load() {
@@ -271,12 +272,13 @@ public:
 
   bool should_move_on_track(int tick) {
     TrackUse& track_use = get_track_use();
-    return (track_use.track_q.front() == gnum) and (track_use.time < tick);
+    return (track_use.track_q.front() == gnum)
+           and (track_use.last_use_time < tick);
   }
 
   void acknowledge_move_on_track(int tick) {
     TrackUse& track_use = get_track_use();
-    track_use.time = tick;
+    track_use.last_use_time = tick;
   }
 
   void progress_to_load_at_next_station() {
