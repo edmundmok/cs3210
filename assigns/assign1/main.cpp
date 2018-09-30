@@ -135,7 +135,6 @@ void run_simulation(int N, TrainCounts& train_count, Stations& blue_line,
                   train.queue_for_track_use();
                 }
                 train.reset_remaining_time_for_track();
-//                cout << train.remaining_time << endl;
               }
             }
           }

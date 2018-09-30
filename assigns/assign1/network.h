@@ -182,13 +182,6 @@ public:
   void reset_remaining_time_for_track() {
     int curr_station = get_global_station_num(),
       next_station = get_global_next_station_num();
-//    cout << line << " " << curr_station << ", " << next_station << endl;
-//    for (int i=0; i<dist_matrix.size(); i++) {
-//      for (int j=0; j<dist_matrix[0].size(); j++) {
-//        cout << dist_matrix[i][j] << " ";
-//      }
-//      cout << endl;
-//    }
     remaining_time = dist_matrix[curr_station][next_station];
   }
 
