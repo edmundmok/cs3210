@@ -224,7 +224,7 @@ int main() {
 
   vector<string> num_trains;
   read_comma_sep_line(cin, num_trains);
-  int g = stoi(num_trains[0]), y = stoi(num_trains[1]),  b = stoi(num_trains[1]);
+  int g = stoi(num_trains[0]), y = stoi(num_trains[1]),  b = stoi(num_trains[2]);
 
   // Include the master thread
   omp_set_num_threads(g+y+b+1);
