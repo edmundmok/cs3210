@@ -129,10 +129,10 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
   int total_maxs = 0, total_mins = 0, total_wt = 0;
   int num_maxs = 0, num_mins = 0, num_waits = 0;
 
-  print_station_header(line_name);
+//  print_station_header(line_name);
 
   for (Station& station: line) {
-    print_station_timings(station);
+//    print_station_timings(station);
 
     if (station.forward.num_waits < 1 or station.backward.num_waits < 1)
       has_insufficient_data = true;
