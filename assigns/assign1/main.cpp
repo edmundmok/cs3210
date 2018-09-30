@@ -94,23 +94,24 @@ void simulate_train_move(Train& train, int tick) {
     }
   }
 
-  if (should_move_on_track) {
-    assert(train.remaining_time > 0);
-    train.update_remaining_time();
-    if (train.remaining_time == 0) {
-      #pragma omp critical(track_lock_name)
-      {
-        train.dequeue_from_track_use();
-      }
+  if (not should_move_on_track) return;
 
-      // Enqueue into a loading queue
-      train.progress_to_load_at_next_station();
-      string station_lock_name = train.get_station_lock_name();
-      #pragma omp critical(station_lock_name)
-      {
-        train.queue_for_station_use();
-      }
-    }
+  assert(train.remaining_time > 0);
+  train.update_remaining_time();
+  if (train.remaining_time > 0) return;
+  assert(train.remaining_time == 0);
+
+  #pragma omp critical(track_lock_name)
+  {
+    train.dequeue_from_track_use();
+  }
+
+  // Enqueue into a loading queue
+  train.progress_to_load_at_next_station();
+  string station_lock_name = train.get_station_lock_name();
+  #pragma omp critical(station_lock_name)
+  {
+    train.queue_for_station_use();
   }
 }
 
