@@ -127,7 +127,7 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
   bool has_valid_wait_time = false;
 
   int total_maxs = 0, total_mins = 0, total_wt = 0;
-  int num_maxs = 0, num_mins = 0, num_waits = 0 ;
+  int num_maxs = 0, num_mins = 0, num_waits = 0;
 
   print_station_header(line_name);
 
@@ -140,7 +140,7 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
       has_valid_wait_time = true;
 
     // Settle forward
-    if (station.forward.num_waits > 1) {
+    if (station.forward.num_waits > 0) {
       num_waits += station.forward.num_waits;
       total_wt += station.forward.total_wait_time;
     }
@@ -156,7 +156,7 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
     }
 
     // Settle backward
-    if (station.backward.num_waits > 1) {
+    if (station.backward.num_waits > 0) {
       num_waits += station.backward.num_waits;
       total_wt += station.backward.total_wait_time;
     }
@@ -176,7 +176,7 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
   float avg_min = total_mins / float(num_mins);
 
   int num_stations = (int) line.size();
-  if (!has_valid_wait_time) {
+  if (not has_valid_wait_time) {
     cout
       << "The " << line_name
       << " line does not have >= 1 station with at least two arrivals."
