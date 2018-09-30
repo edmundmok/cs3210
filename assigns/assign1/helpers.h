@@ -37,7 +37,7 @@ int get_neighbour(vector<vector<int>>& M, int curr,
 
 void line_up_stations(vector<vector<int>>& M, vector<string>& stations_strs,
                       unordered_set<int>& stations,
-                      vector<station_t>& lined_stations) {
+                      Stations& lined_stations) {
   // first find the starting point
   int curr = -1;
   for (int station_idx: stations) {

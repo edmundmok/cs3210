@@ -18,7 +18,7 @@ void print_vector(vector<int>& v) {
   cout << endl;
 }
 
-void print_train_line(vector<station_t>& line) {
+void print_train_line(Stations& line) {
   for (int i=0; i<line.size(); i++) {
     if (i>0) cout << " - ";
     cout << line[i].station_num << ":" << line[i].station_name;
@@ -26,8 +26,7 @@ void print_train_line(vector<station_t>& line) {
   cout << endl;
 }
 
-void print_train_lines(vector<station_t> &green, vector<station_t> &yellow,
-                       vector<station_t> &blue) {
+void print_train_lines(Stations &green, Stations &yellow, Stations &blue) {
   cout << "green: ";
   print_train_line(green);
   cout << "yellow: ";
@@ -57,13 +56,13 @@ void print_train(Train& train) {
     << endl;
 }
 
-void print_trains(vector<Train>& trains) {
+void print_trains(Trains& trains) {
   for (Train& train: trains) {
     print_train(train);
   }
 }
 
-void print_system_state(vector<Train>& trains, int current_time) {
+void print_system_state(Trains& trains, int current_time) {
   cout << current_time << ": ";
   for (Train& train: trains) {
     if (train.start_time > current_time) continue;
@@ -123,7 +122,7 @@ void print_station_timings(station_t& station) {
        << endl;
 }
 
-void print_stations_timings(vector<station_t>& line, string line_name, int num_trains) {
+void print_stations_timings(Stations& line, string line_name, int num_trains) {
   bool has_insufficient_data = false;
   bool has_valid_wait_time = false;
 

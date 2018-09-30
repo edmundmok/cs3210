@@ -24,15 +24,15 @@
 
 using namespace std;
 
-void run_simulation(int N, train_count_t& train_count, vector<station_t>& blue_line,
-                    vector<station_t>& yellow_line, vector<station_t>& green_line,
-                    vector<float>& station_popularities,
+void run_simulation(int N, train_count_t& train_count, Stations& blue_line,
+                    Stations& yellow_line, Stations& green_line,
+                    Popularities& station_popularities,
                     vector<vector<int>>& dist_matrix,
                     vector<station_queue_t>& station_use,
                     vector<vector<track_queue_t>>& track_use) {
 
   // assign trains to thread_ids
-  vector<Train> trains;
+  Trains trains;
 
   assert (green_line.size() > 0);
   assert (yellow_line.size() > 0);
@@ -213,10 +213,10 @@ int main() {
   }
   cin.ignore(1, '\n');
 
-  vector<float> station_popularities(S);
+  Popularities station_popularities(S);
   read_popularities(cin, station_popularities);
 
-  vector<station_t> green_line, yellow_line, blue_line;
+  Stations green_line, yellow_line, blue_line;
   read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, green_line);
   read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, yellow_line);
   read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, blue_line);

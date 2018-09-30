@@ -25,6 +25,12 @@ struct train_count_t;
 struct station_t;
 struct train_t;
 
+class Train;
+
+typedef vector<station_t> Stations;
+typedef vector<Train> Trains;
+typedef vector<float> Popularities;
+
 enum TrainState { LOAD, MOVE };
 
 enum TrainDirection { FORWARD, BACKWARD };
@@ -76,7 +82,7 @@ struct station_t {
   int max_backward_waiting_time = NINF;
 };
 
-int get_loading_time(int i, vector<float>& popularity) {
+int get_loading_time(int i, Popularities& popularity) {
   // use the formula and take ceiling because train must stop for at least
   // that amount but ticks are integers
   return ceil(popularity[i] * ((rand() % 10) + 1));
@@ -89,8 +95,8 @@ public:
   int gnum;
 
   vector<vector<int>>& dist_matrix;
-  vector<station_t>& stations;
-  vector<float>& station_popularities;
+  Stations& stations;
+  Popularities& station_popularities;
 
   TrainDirection direction;
   TrainState state;
@@ -102,8 +108,8 @@ public:
 
   int start_time; // For printing and debugging purposes
 
-  Train(char line, int lnum, int gnum, vector<station_t>& stations,
-        vector<vector<int>>& dist_matrix, vector<float>& popularities,
+  Train(char line, int lnum, int gnum, Stations& stations,
+        vector<vector<int>>& dist_matrix, Popularities& popularities,
         vector<station_queue_t>& station_use,
         vector<vector<track_queue_t>>& track_uses) :
   line(line), lnum(lnum), gnum(gnum), stations(stations), dist_matrix(dist_matrix),
