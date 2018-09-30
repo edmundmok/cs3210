@@ -51,7 +51,7 @@ void simulate_train_load(Train& train, int tick) {
   if (train.remaining_time > 0) return;
   assert(train.remaining_time == 0);
 
-  // update timings
+  // Door will shut now!
   train.update_station_wait_times_for_door_close(tick);
 
   #pragma omp critical(station_lock_name)
@@ -64,6 +64,8 @@ void simulate_train_load(Train& train, int tick) {
   if (train.is_at_terminal_station()) {
     // next move should be other direction load
     train.reverse_train_direction();
+    // we need to get a new lock name because direction has changed
+    // even though same station
     station_lock_name = train.get_station_lock_name();
     #pragma omp critical(station_lock_name)
     {
