@@ -104,21 +104,21 @@ void print_station_timings(Station& station) {
        << " | "
        << station.station_name
        << " | "
-       << station.num_forward_waits
+       << station.forward.num_waits
        << " | "
-       << station.total_forward_waiting_time
+       << station.forward.total_wait_time
        << " | "
-       << station.min_forward_waiting_time
+       << station.forward.min_wait_time
        << " | "
-       << station.max_forward_waiting_time
+       << station.forward.max_wait_time
        << " | "
-       << station.num_backward_waits
+       << station.backward.num_waits
        << " | "
-       << station.total_backward_waiting_time
+       << station.backward.total_wait_time
        << " | "
-       << station.min_backward_waiting_time
+       << station.backward.min_wait_time
        << " | "
-       << station.max_backward_waiting_time
+       << station.backward.max_wait_time
        << endl;
 }
 
@@ -134,41 +134,41 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
   for (Station& station: line) {
     print_station_timings(station);
 
-    if (station.num_forward_waits < 1 or station.num_backward_waits < 1)
+    if (station.forward.num_waits < 1 or station.backward.num_waits < 1)
       has_insufficient_data = true;
-    if (station.num_forward_waits >= 1 or station.num_forward_waits >= 1)
+    if (station.forward.num_waits >= 1 or station.backward.num_waits >= 1)
       has_valid_wait_time = true;
 
     // Settle forward
-    if (station.num_forward_waits > 1) {
-      num_waits += station.num_forward_waits;
-      total_wt += station.total_forward_waiting_time;
+    if (station.forward.num_waits > 1) {
+      num_waits += station.forward.num_waits;
+      total_wt += station.forward.total_wait_time;
     }
 
-    if (station.max_forward_waiting_time != NINF) {
+    if (station.forward.max_wait_time != NINF) {
       num_maxs++;
-      total_maxs += station.max_forward_waiting_time;
+      total_maxs += station.forward.max_wait_time;
     }
 
-    if (station.min_forward_waiting_time != INF) {
+    if (station.forward.min_wait_time != INF) {
       num_mins++;
-      total_mins += station.min_forward_waiting_time;
+      total_mins += station.forward.min_wait_time;
     }
 
     // Settle backward
-    if (station.num_backward_waits > 1) {
-      num_waits += station.num_backward_waits;
-      total_wt += station.total_backward_waiting_time;
+    if (station.backward.num_waits > 1) {
+      num_waits += station.backward.num_waits;
+      total_wt += station.backward.total_wait_time;
     }
 
-    if (station.max_backward_waiting_time != NINF) {
+    if (station.backward.max_wait_time != NINF) {
       num_maxs++;
-      total_maxs += station.max_backward_waiting_time;
+      total_maxs += station.backward.max_wait_time;
     }
 
-    if (station.min_backward_waiting_time != INF) {
+    if (station.backward.min_wait_time != INF) {
       num_mins++;
-      total_mins += station.min_backward_waiting_time;
+      total_mins += station.backward.min_wait_time;
     }
   }
   float avg_wait = total_wt / float(num_waits);
@@ -196,7 +196,6 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
        << ": "
        << num_trains
        << " trains -> "
-//       << setprecision(2)
        << avg_wait
        << ", "
        << avg_max

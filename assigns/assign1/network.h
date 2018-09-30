@@ -66,26 +66,26 @@ struct TrackUse {
   queue<int> track_q;
 };
 
+struct StationStats {
+  int last_user = UNKNOWN_TRAIN;
+  int last_arrival = UNDEFINED;
+  int num_waits = 0;
+  int total_wait_time = 0;
+  int min_wait_time = INF;
+  int max_wait_time = NINF;
+};
+
 struct Station {
+
   int station_num;
   string station_name;
 
-  // Forward stats
-  // Last user
-  int last_forward_user = UNKNOWN_TRAIN;
-  int last_forward_arrival = UNDEFINED;
-  int num_forward_waits = 0;
-  int total_forward_waiting_time = 0;
-  int min_forward_waiting_time = INF;
-  int max_forward_waiting_time = NINF;
+  StationStats forward;
+  StationStats backward;
 
-  // Backward stats
-  int last_backward_user = UNKNOWN_TRAIN;
-  int last_backward_arrival = UNDEFINED;
-  int num_backward_waits = 0;
-  int total_backward_waiting_time = 0;
-  int min_backward_waiting_time = INF;
-  int max_backward_waiting_time = NINF;
+  StationStats& get_stats(TrainDirection direction) {
+    return (direction == FORWARD) ? forward : backward;
+  }
 };
 
 int get_loading_time(int i, Popularities& popularity) {
@@ -208,59 +208,37 @@ public:
   }
 
   bool has_door_just_opened() {
-    Station& station = get_station();
-    return (direction == FORWARD and station.last_forward_user != gnum)
-      or (direction == BACKWARD and station.last_backward_user != gnum);
+    return get_station().get_stats(direction).last_user != gnum;
   }
 
   bool is_first_arrival() {
-    Station& station = get_station();
-    return (direction == FORWARD and station.last_forward_arrival == UNDEFINED)
-      or (direction == BACKWARD and station.last_backward_arrival == UNDEFINED);
+    return get_station().get_stats(direction).last_arrival == UNDEFINED;
   }
 
   void update_station_wait_times_as_arrival(int tick) {
-    Station& station = get_station();
-    if (direction == FORWARD) {
-      station.last_forward_user = gnum;
-    } else {
-      station.last_backward_user = gnum;
-    }
+    StationStats& stats = get_station().get_stats(direction);
+    stats.last_user = gnum;
 
     if (is_first_arrival()) return;
 
-    if (direction == FORWARD) {
-      int latest_wait = tick - station.last_forward_arrival;
-      station.total_forward_waiting_time += latest_wait;
-      station.num_forward_waits++;
-      station.min_forward_waiting_time = min(station.min_forward_waiting_time, latest_wait);
-      station.max_forward_waiting_time = max(station.max_forward_waiting_time, latest_wait);
-    } else {
-      int latest_wait = tick - station.last_backward_arrival;
-      station.total_backward_waiting_time += latest_wait;
-      station.num_backward_waits++;
-      station.min_backward_waiting_time = min(station.min_backward_waiting_time, latest_wait);
-      station.max_backward_waiting_time = max(station.max_backward_waiting_time, latest_wait);
-    }
+    int latest_wait = tick - stats.last_arrival;
+    stats.total_wait_time += latest_wait;
+    stats.num_waits++;
+    stats.min_wait_time = min(stats.min_wait_time, latest_wait);
+    stats.max_wait_time = max(stats.max_wait_time, latest_wait);
   }
 
   void update_remaining_time() { remaining_time--; }
 
   void update_station_wait_times_as_departure(int tick) {
-    Station& station = get_station();
-    if (direction == FORWARD) station.last_forward_arrival = tick;
-    else station.last_backward_arrival = tick;
+    StationStats& stats = get_station().get_stats(direction);
+    stats.last_arrival = tick;
   }
 
   void remove_as_station_user() {
-    Station& station = get_station();
-    if (direction == FORWARD) {
-      assert(station.last_forward_user == gnum);
-      station.last_forward_user = UNDEFINED;
-    } else {
-      assert(station.last_backward_user == gnum);
-      station.last_forward_user = UNDEFINED;
-    }
+    StationStats& stats = get_station().get_stats(direction);
+    assert(stats.last_user == gnum);
+    stats.last_user = UNDEFINED;
   }
 
   void dequeue_from_station_use() {
