@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y \
   linux-tools-generic \
   make \
   man \
+  openmpi-bin \
+  openmpi-doc \
+  libopenmpi-dev \
   python \
   python-pip \
   vim
