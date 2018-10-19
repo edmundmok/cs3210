@@ -9,48 +9,56 @@
 
 int main(int argc, char* argv[]) {
 
-  // Preliminary read to determine "correct" number of processes
-  freopen(INPUT_FILE_NAME, "r", stdin);
-  int S = read_integer_line(cin);
-  vector<string> stations_strs;
-  read_comma_sep_line(cin, stations_strs);
-
-  int correct_num_procs = S;
-  int mat_val;
-  for (int i=0; i<S; i++){
-    for (int j=0; j<S; j++) {
-      cin >> mat_val;
-      // don't double count the tracks
-      if (i < j and mat_val) correct_num_procs++;
-    }
-  }
-
-  // Add +1 proc for master coordinator
-  correct_num_procs++;
-
   // Initialize OpenMPI up front otherwise there will be some issues
   MPI_Init(&argc, &argv);
   int my_id, num_procs, master;
   MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
+  master = num_procs - 1;
+
+  int correct_num_procs;
+
+  if (my_id == master) {
+    // Preliminary read to determine "correct" number of processes
+    freopen(INPUT_FILE_NAME, "r", stdin);
+    int S = read_integer_line(cin);
+    vector<string> stations_strs;
+    read_comma_sep_line(cin, stations_strs);
+
+    correct_num_procs = S;
+    int mat_val;
+    for (int i=0; i<S; i++){
+      for (int j=0; j<S; j++) {
+        cin >> mat_val;
+        if (mat_val) correct_num_procs++;
+      }
+    }
+    // Add +1 proc for master coordinator
+    correct_num_procs++;
+
+  }
+
+  // Broadcast validation num procs to everyone
+  MPI_Bcast(&correct_num_procs, 1, MPI_INT, master, MPI_COMM_WORLD);
 
   // Determine if we should continue or just exit here
 //  if (num_procs != correct_num_procs) {
-//    printf("Incorrect number of processes used, should be %d for the given input. "
-//             "Use num links (count shared as 1) + num stations + 1 (master). "
-//             "Terminating.\n", correct_num_procs);
+//    if (my_id == master) {
+//      printf("Incorrect number of processes used, should be %d for the given input. "
+//               "Use num links (count shared as 1) + num stations + 1 (master). "
+//               "Terminating.\n", correct_num_procs);
+//    }
 //    MPI_Finalize();
 //    exit(0);
 //  }
 
-  master = num_procs - 1;
   if (my_id == master) {
     freopen(INPUT_FILE_NAME, "r", stdin);
     // Read number of train stations in network
-    S = read_integer_line(cin);
+    int S = read_integer_line(cin);
 
     // Read list of stations and
-    stations_strs.clear();
+    vector<string> stations_strs;
     read_comma_sep_line(cin, stations_strs);
     // map station name to index number
     unordered_map<string, int> stations_map;
@@ -86,22 +94,40 @@ int main(int argc, char* argv[]) {
 
     TrainCounts train_counts(num_greens, num_yellows, num_blues);
 
-    // Allocate stations to remaining processes
-
     // Allocate links to respective process
+    int proc_rank = S;
+    for (int i=0; i<S; i++) {
+      for (int j=i+1; j<S; j++) {
+        if (dist_matrix[i][j] == 0) continue;
+        // Send distance
+//        MPI_Send();
+
+        // Send i and j
+        proc_rank++;
+      }
+    }
+
+    // Allocate stations to remaining processes
+    for (int i=0; i<S; i++) {
+
+    }
 
   }
 
-  if (my_id < S) {
-    // station processes
-
-  } else if (my_id < master) {
-    // link processes
-
-  }
+//  if (my_id < S) {
+//    // station processes
+//
+//  } else if (my_id < master) {
+//    // link processes
+//    // get the link object from master
+//
+//    // Get the distance
+////    MPI_Recv();
+//
+//  }
 
   MPI_Barrier(MPI_COMM_WORLD);
-  
+
   // Run simulation
 //  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
 //                 station_popularities, dist_matrix, station_use, track_use);
