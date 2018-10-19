@@ -114,6 +114,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Identify link pairings for each station first
+    // pairs are (listen, send)
     unordered_map<int, vector<pair<int, int>>> green_line_pairings,
       yellow_line_pairings, blue_line_pairings;
 
@@ -121,12 +122,12 @@ int main(int argc, char* argv[]) {
     if (green_line.size() >= 2) {
       // Deal with terminal stations first
       green_line_pairings[green_line[0]].push_back(make_pair(
-        link_rank[green_line[0]][green_line[1]],
-        link_rank[green_line[1]][green_line[0]]
+        link_rank[green_line[1]][green_line[0]],
+        link_rank[green_line[0]][green_line[1]]
       ));
       green_line_pairings[green_line[green_line.size()-1]].push_back(make_pair(
-        link_rank[green_line[green_line.size()-1]][green_line[green_line.size()-2]],
-        link_rank[green_line[green_line.size()-2]][green_line[green_line.size()-1]]
+        link_rank[green_line[green_line.size()-2]][green_line[green_line.size()-1]],
+      link_rank[green_line[green_line.size()-1]][green_line[green_line.size()-2]]
       ));
 
       // Deal with non-terminal stations
@@ -147,12 +148,12 @@ int main(int argc, char* argv[]) {
     if (yellow_line.size() >= 2) {
       // Deal with terminal stations first
       yellow_line_pairings[yellow_line[0]].push_back(make_pair(
-        link_rank[yellow_line[0]][yellow_line[1]],
-        link_rank[yellow_line[1]][yellow_line[0]]
+        link_rank[yellow_line[1]][yellow_line[0]],
+      link_rank[yellow_line[0]][yellow_line[1]]
       ));
       yellow_line_pairings[yellow_line[yellow_line.size()-1]].push_back(make_pair(
-        link_rank[yellow_line[yellow_line.size()-1]][yellow_line[yellow_line.size()-2]],
-        link_rank[yellow_line[yellow_line.size()-2]][yellow_line[yellow_line.size()-1]]
+        link_rank[yellow_line[yellow_line.size()-2]][yellow_line[yellow_line.size()-1]],
+      link_rank[yellow_line[yellow_line.size()-1]][yellow_line[yellow_line.size()-2]]
       ));
 
       // Deal with non-terminal stations
@@ -172,12 +173,12 @@ int main(int argc, char* argv[]) {
     if (blue_line.size() >= 2) {
       // Deal with terminal stations first
       blue_line_pairings[blue_line[0]].push_back(make_pair(
-        link_rank[blue_line[0]][blue_line[1]],
-        link_rank[blue_line[1]][blue_line[0]]
+        link_rank[blue_line[1]][blue_line[0]],
+        link_rank[blue_line[0]][blue_line[1]]
       ));
       blue_line_pairings[blue_line[blue_line.size()-1]].push_back(make_pair(
-        link_rank[blue_line[blue_line.size()-1]][blue_line[blue_line.size()-2]],
-        link_rank[blue_line[blue_line.size()-2]][blue_line[blue_line.size()-1]]
+        link_rank[blue_line[blue_line.size()-2]][blue_line[blue_line.size()-1]],
+        link_rank[blue_line[blue_line.size()-1]][blue_line[blue_line.size()-2]]
       ));
 
       // Deal with non-terminal stations
@@ -245,26 +246,26 @@ int main(int argc, char* argv[]) {
 //      }
 //      cout << endl;
 //    }
-
-
-    // Allocate stations to remaining processes
-    for (int i=0; i<S; i++) {
-      // send pairings by batches
-      // (Num) of greens
-      int num = green_line_pairings.size();
-      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//      for ()
-
-      // yellow pairings
-      num = yellow_line_pairings.size();
-      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-
-      // blue pairings
-      num = blue_line_pairings.size();
-      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-    }
-
-  }
+//
+//
+//    // Allocate stations to remaining processes
+//    for (int i=0; i<S; i++) {
+//      // send pairings by batches
+//      // (Num) of greens
+//      int num = green_line_pairings.size();
+//      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+////      for ()
+//
+//      // yellow pairings
+//      num = yellow_line_pairings.size();
+//      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+//
+//      // blue pairings
+//      num = blue_line_pairings.size();
+//      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+//    }
+//
+//  }
 
   MPI_Status status;
   Track track;
