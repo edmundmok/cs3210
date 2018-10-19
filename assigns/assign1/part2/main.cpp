@@ -85,10 +85,6 @@ int main(int argc, char* argv[]) {
     read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, yellow_line);
     read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, blue_line);
 
-//    print_vector(green_line);
-//    print_vector(yellow_line);
-//    print_vector(blue_line);
-
     int N = read_integer_line(cin);
 
     vector<string> num_trains;
@@ -165,7 +161,7 @@ int main(int argc, char* argv[]) {
           link_rank[yellow_line[i-1]][yellow_line[i]],
           link_rank[yellow_line[i]][yellow_line[i+1]]
         ));
-        yellow_line_pairings[green_line[i]].push_back(make_pair(
+        yellow_line_pairings[yellow_line[i]].push_back(make_pair(
           link_rank[yellow_line[i+1]][yellow_line[i]],
           link_rank[yellow_line[i]][yellow_line[i-1]]
         ));
@@ -196,6 +192,59 @@ int main(int argc, char* argv[]) {
         ));
       }
     }
+
+
+//    /* *
+//     * DEBUG!
+//     *
+//     * */
+//
+//    cout << "lines:" << endl;
+//    cout << "green: ";
+//    print_vector(green_line);
+//    cout << "yellow: ";
+//    print_vector(yellow_line);
+//    cout << "blue: ";
+//    print_vector(blue_line);
+//
+//    cout << "link matrix:" << endl;
+//    for (int i=0; i<S; i++) {
+//      for (int j=0; j<S; j++) {
+//        cout << link_rank[i][j] << " ";
+//      }
+//      cout << endl;
+//    }
+//
+//    // print pairings for lines
+//    // green line pairings
+//    cout << "green: " << endl;
+//    for (auto& pairing_list : green_line_pairings) {
+//      cout << pairing_list.first << ":";
+//      for (auto& pairs : pairing_list.second) {
+//        cout << " (" << pairs.first << ", " << pairs.second << ")";
+//      }
+//      cout << endl;
+//    }
+//
+//    // yellow line pairings
+//    cout << "yellow: " << endl;
+//    for (auto& pairing_list : yellow_line_pairings) {
+//      cout << pairing_list.first << ":";
+//      for (auto& pairs : pairing_list.second) {
+//        cout << " (" << pairs.first << ", " << pairs.second << ")";
+//      }
+//      cout << endl;
+//    }
+//
+//    // blue line pairings
+//    cout << "blue: " << endl;
+//    for (auto& pairing_list : blue_line_pairings) {
+//      cout << pairing_list.first << ":";
+//      for (auto& pairs : pairing_list.second) {
+//        cout << " (" << pairs.first << ", " << pairs.second << ")";
+//      }
+//      cout << endl;
+//    }
 
 
     // Allocate stations to remaining processes
