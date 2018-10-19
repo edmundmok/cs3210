@@ -249,13 +249,19 @@ int main(int argc, char* argv[]) {
 
     // Allocate stations to remaining processes
     for (int i=0; i<S; i++) {
-      // indicate how many messages to expect next
-//      MPI_Send(&station_link_count[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      // send pairings by batches
+      // (Num) of greens
+      int num = green_line_pairings.size();
+      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+//      for ()
 
-      // send all pairings!
-      for (int j=0; j<S; j++) {
+      // yellow pairings
+      num = yellow_line_pairings.size();
+      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
-      }
+      // blue pairings
+      num = blue_line_pairings.size();
+      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
     }
 
   }
@@ -265,10 +271,12 @@ int main(int argc, char* argv[]) {
 
   if (my_id < S) {
     // station processes
+    int num;
+    // green pairings
 
-    // get number of pairings upcoming
+    // yellow pairings
 
-    // get all pairings!
+    // blue pairings
 
   } else if (my_id < master) {
 //    // link processes
