@@ -56,10 +56,8 @@ int main(int argc, char* argv[]) {
     unordered_map<string, int> stations_map;
     get_station_map(stations_map, stations_strs);
 
-    // Read adjacency matrix of network and
-    // setup dist_matrix
+    // Read adjacency matrix of network and setup dist_matrix
     AdjMatrix dist_matrix(S, vector<int>(S));
-
 
     for (int i=0; i<S; i++){
       for (int j=0; j<S; j++) {
@@ -88,27 +86,22 @@ int main(int argc, char* argv[]) {
 
     TrainCounts train_counts(num_greens, num_yellows, num_blues);
 
+    // Allocate stations to remaining processes
 
+    // Allocate links to respective process
 
-//  if (my_id == master) {
-//    // Allocate stations to remaining processes
-//
-//
-//
-//    // Allocate links to respective process
-//
-//
-//  } else if (my_id < S) {
-//
-//  }
   }
 
+  if (my_id < S) {
+    // station processes
 
+  } else if (my_id < master) {
+    // link processes
 
+  }
 
-
-
-
+  MPI_Barrier(MPI_COMM_WORLD);
+  
   // Run simulation
 //  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
 //                 station_popularities, dist_matrix, station_use, track_use);
