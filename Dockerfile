@@ -14,7 +14,10 @@ RUN apt-get update && apt-get install -y \
   make \
   man \
   openmpi-bin \
+  openmpi-common \
   openmpi-doc \
+  openssh-client \
+  openssh-server \
   libopenmpi-dev \
   python \
   python-pip \
