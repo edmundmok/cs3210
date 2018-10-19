@@ -16,12 +16,12 @@ int main(int argc, char* argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
   master = num_procs - 1;
 
-  int correct_num_procs;
+  int correct_num_procs, S;
 
   if (my_id == master) {
     // Preliminary read to determine "correct" number of processes
     freopen(INPUT_FILE_NAME, "r", stdin);
-    int S = read_integer_line(cin);
+    S = read_integer_line(cin);
     vector<string> stations_strs;
     read_comma_sep_line(cin, stations_strs);
 
@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
 
   // Broadcast validation num procs to everyone
   MPI_Bcast(&correct_num_procs, 1, MPI_INT, master, MPI_COMM_WORLD);
+  MPI_Bcast(&S, 1, MPI_INT, master, MPI_COMM_WORLD);
 
   // Determine if we should continue or just exit here
 //  if (num_procs != correct_num_procs) {
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]) {
   if (my_id == master) {
     freopen(INPUT_FILE_NAME, "r", stdin);
     // Read number of train stations in network
-    int S = read_integer_line(cin);
+    S = read_integer_line(cin);
 
     // Read list of stations and
     vector<string> stations_strs;
@@ -100,9 +101,12 @@ int main(int argc, char* argv[]) {
       for (int j=i+1; j<S; j++) {
         if (dist_matrix[i][j] == 0) continue;
         // Send distance
-//        MPI_Send();
+        MPI_Send(&dist_matrix[i][j], 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
 
         // Send i and j
+        MPI_Send(&i, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+        MPI_Send(&j, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+
         proc_rank++;
       }
     }
@@ -114,17 +118,23 @@ int main(int argc, char* argv[]) {
 
   }
 
-//  if (my_id < S) {
-//    // station processes
-//
-//  } else if (my_id < master) {
-//    // link processes
-//    // get the link object from master
-//
-//    // Get the distance
-////    MPI_Recv();
-//
-//  }
+  MPI_Status status;
+  Track track;
+
+  if (my_id < S) {
+    // station processes
+
+  } else if (my_id < master) {
+    // link processes
+    // get the link object from master
+    int dist, left, right;
+
+    // Get the distance
+    MPI_Recv(&track.dist, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&track.source, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&track.dest, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    track.remaining_time = track.dist;
+  }
 
   MPI_Barrier(MPI_COMM_WORLD);
 
