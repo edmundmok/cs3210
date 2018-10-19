@@ -20,9 +20,14 @@ int main(int argc, char* argv[]) {
   // setup dist_matrix
   AdjMatrix dist_matrix(S, vector<int>(S));
 
+  // Variable to record the "correct" number of processes
+  int correct_num_procs = S;
+
   for (int i=0; i<S; i++){
     for (int j=0; j<S; j++) {
       cin >> dist_matrix[i][j];
+      // don't double count the tracks
+      if (i < j and dist_matrix[i][j]) correct_num_procs++;
     }
   }
   cin.ignore(1, '\n');
@@ -50,13 +55,39 @@ int main(int argc, char* argv[]) {
   // Should'nt we enforce the number of processes?
   MPI_Init(&argc, &argv);
 
-  int rank, num_tasks;
-  MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  int my_id, num_procs;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 
-  // Allocate links to each process
+  // Add the master process that coordinates
+  correct_num_procs += 1;
 
-  // Allocate stations to remaining processes
+  if (num_procs != correct_num_procs) {
+    printf("Incorrect number of processes used, should be %d for the given input. "
+             "Use num links (count shared as 1) + num stations + 1 (master). "
+             "Terminating.\n", correct_num_procs);
+    MPI_Finalize();
+    exit(0);
+  }
+
+
+  // Final process shall be the master
+  int master = num_procs-1;
+
+  // Use adjacency matrix to find out non-zero links
+
+  if (my_id == master) {
+    // Allocate links to respective process
+
+
+    // Allocate stations to remaining processes
+
+  } else {
+
+  }
+
+
+
 
   // Run simulation
 //  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
