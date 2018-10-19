@@ -85,6 +85,10 @@ int main(int argc, char* argv[]) {
     read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, yellow_line);
     read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, blue_line);
 
+//    print_vector(green_line);
+//    print_vector(yellow_line);
+//    print_vector(blue_line);
+
     int N = read_integer_line(cin);
 
     vector<string> num_trains;
@@ -95,25 +99,114 @@ int main(int argc, char* argv[]) {
 
     TrainCounts train_counts(num_greens, num_yellows, num_blues);
 
+    AdjMatrix link_rank(S, vector<int> (S));
+
     // Allocate links to respective process
     int proc_rank = S;
     for (int i=0; i<S; i++) {
-      for (int j=i+1; j<S; j++) {
+      for (int j=0; j<S; j++) {
         if (dist_matrix[i][j] == 0) continue;
-        // Send distance
-        MPI_Send(&dist_matrix[i][j], 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+//        // Send distance
+//        MPI_Send(&dist_matrix[i][j], 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+//
+//        // Send i and j
+//        MPI_Send(&i, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+//        MPI_Send(&j, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
 
-        // Send i and j
-        MPI_Send(&i, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
-        MPI_Send(&j, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
-
-        proc_rank++;
+        link_rank[i][j] = proc_rank++;
       }
     }
 
+    // Identify link pairings for each station first
+    unordered_map<int, vector<pair<int, int>>> green_line_pairings,
+      yellow_line_pairings, blue_line_pairings;
+
+    // Green line
+    if (green_line.size() >= 2) {
+      // Deal with terminal stations first
+      green_line_pairings[green_line[0]].push_back(make_pair(
+        link_rank[green_line[0]][green_line[1]],
+        link_rank[green_line[1]][green_line[0]]
+      ));
+      green_line_pairings[green_line[green_line.size()-1]].push_back(make_pair(
+        link_rank[green_line[green_line.size()-1]][green_line[green_line.size()-2]],
+        link_rank[green_line[green_line.size()-2]][green_line[green_line.size()-1]]
+      ));
+
+      // Deal with non-terminal stations
+      for (int i=1; i<green_line.size()-1; i++) {
+        green_line_pairings[green_line[i]].push_back(make_pair(
+          link_rank[green_line[i-1]][green_line[i]],
+          link_rank[green_line[i]][green_line[i+1]]
+        ));
+        green_line_pairings[green_line[i]].push_back(make_pair(
+          link_rank[green_line[i+1]][green_line[i]],
+          link_rank[green_line[i]][green_line[i-1]]
+        ));
+      }
+    }
+
+
+    // Yellow line
+    if (yellow_line.size() >= 2) {
+      // Deal with terminal stations first
+      yellow_line_pairings[yellow_line[0]].push_back(make_pair(
+        link_rank[yellow_line[0]][yellow_line[1]],
+        link_rank[yellow_line[1]][yellow_line[0]]
+      ));
+      yellow_line_pairings[yellow_line[yellow_line.size()-1]].push_back(make_pair(
+        link_rank[yellow_line[yellow_line.size()-1]][yellow_line[yellow_line.size()-2]],
+        link_rank[yellow_line[yellow_line.size()-2]][yellow_line[yellow_line.size()-1]]
+      ));
+
+      // Deal with non-terminal stations
+      for (int i=1; i<yellow_line.size()-1; i++) {
+        yellow_line_pairings[yellow_line[i]].push_back(make_pair(
+          link_rank[yellow_line[i-1]][yellow_line[i]],
+          link_rank[yellow_line[i]][yellow_line[i+1]]
+        ));
+        yellow_line_pairings[green_line[i]].push_back(make_pair(
+          link_rank[yellow_line[i+1]][yellow_line[i]],
+          link_rank[yellow_line[i]][yellow_line[i-1]]
+        ));
+      }
+    }
+
+    // Blue line
+    if (blue_line.size() >= 2) {
+      // Deal with terminal stations first
+      blue_line_pairings[blue_line[0]].push_back(make_pair(
+        link_rank[blue_line[0]][blue_line[1]],
+        link_rank[blue_line[1]][blue_line[0]]
+      ));
+      blue_line_pairings[blue_line[blue_line.size()-1]].push_back(make_pair(
+        link_rank[blue_line[blue_line.size()-1]][blue_line[blue_line.size()-2]],
+        link_rank[blue_line[blue_line.size()-2]][blue_line[blue_line.size()-1]]
+      ));
+
+      // Deal with non-terminal stations
+      for (int i=1; i<blue_line.size()-1; i++) {
+        blue_line_pairings[blue_line[i]].push_back(make_pair(
+          link_rank[blue_line[i-1]][blue_line[i]],
+          link_rank[blue_line[i]][blue_line[i+1]]
+        ));
+        blue_line_pairings[blue_line[i]].push_back(make_pair(
+          link_rank[blue_line[i+1]][blue_line[i]],
+          link_rank[blue_line[i]][blue_line[i-1]]
+        ));
+      }
+    }
+
+
     // Allocate stations to remaining processes
     for (int i=0; i<S; i++) {
+      // indicate how many messages to expect next
+//      MPI_Send(&station_link_count[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
+      // send all pairings!
+      for (int j=0; j<S; j++) {
+
+      }
     }
 
   }
@@ -124,16 +217,20 @@ int main(int argc, char* argv[]) {
   if (my_id < S) {
     // station processes
 
-  } else if (my_id < master) {
-    // link processes
-    // get the link object from master
-    int dist, left, right;
+    // get number of pairings upcoming
 
-    // Get the distance
-    MPI_Recv(&track.dist, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-    MPI_Recv(&track.source, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-    MPI_Recv(&track.dest, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-    track.remaining_time = track.dist;
+    // get all pairings!
+
+  } else if (my_id < master) {
+//    // link processes
+//    // get the link object from master
+//    int dist, left, right;
+//
+//    // Get the distance
+//    MPI_Recv(&track.dist, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+//    MPI_Recv(&track.source, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+//    MPI_Recv(&track.dest, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+//    track.remaining_time = track.dist;
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
