@@ -246,30 +246,46 @@ int main(int argc, char* argv[]) {
 //      }
 //      cout << endl;
 //    }
-//
-//
-//    // Allocate stations to remaining processes
-//    for (int i=0; i<S; i++) {
-//      // send pairings by batches
-//      // (Num) of greens
-//      int num = green_line_pairings.size();
-//      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-////      for ()
-//
-//      // yellow pairings
-//      num = yellow_line_pairings.size();
-//      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//
-//      // blue pairings
-//      num = blue_line_pairings.size();
-//      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-//    }
-//
-//  }
+
+
+    // Allocate stations to remaining processes
+    for (int i=0; i<S; i++) {
+      // send pairings by batches
+      // (Num) of greens
+      int num = green_line_pairings[i].size();
+      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      for (auto& pair: green_line_pairings[i]) {
+        // send "listen" half
+        MPI_Send(&pair.first, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+        // send "send" half
+        MPI_Send(&pair.second, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      }
+
+      // yellow pairings
+      num = yellow_line_pairings[i].size();
+      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      for (auto& pair: yellow_line_pairings[i]) {
+        // send "listen" half
+        MPI_Send(&pair.first, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+        // send "send" half
+        MPI_Send(&pair.second, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      }
+
+      // blue pairings
+      num = blue_line_pairings[i].size();
+      MPI_Send(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      for (auto& pair: blue_line_pairings[i]) {
+        // send "listen" half
+        MPI_Send(&pair.first, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+        // send "send" half
+        MPI_Send(&pair.second, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      }
+    }
+
+  }
 
   MPI_Status status;
   Track track;
-
   if (my_id < S) {
     // station processes
     int num;
