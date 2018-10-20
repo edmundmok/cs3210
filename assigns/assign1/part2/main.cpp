@@ -6,6 +6,9 @@
 #include "network.h"
 
 #define INPUT_FILE_NAME "in.txt"
+#define GREEN 'G'
+#define YELLOW 'Y'
+#define BLUE 'B'
 
 int main(int argc, char* argv[]) {
 
@@ -273,6 +276,9 @@ int main(int argc, char* argv[]) {
       MPI_Send(&yellow_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
       MPI_Send(&blue_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
 
+      // send station popularity
+      MPI_Send(&station_popularities[i], 1, MPI_Int, i, 0, MPI_COMM_WORLD);
+
       // send pairings by batches
       // (Num) of greens
       int num = green_line_pairings[i].size();
@@ -324,6 +330,9 @@ int main(int argc, char* argv[]) {
     MPI_Recv(&yellow_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
     MPI_Recv(&blue_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
 
+    // station popularity
+    MPI_Recv(&station.popularity, 1, MPI_Int, master, 0, MPI_COMM_WORLD);
+
     int num, listen, send;
     // green pairings
     MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
@@ -366,6 +375,59 @@ int main(int argc, char* argv[]) {
     }
 
     // initialize trains into queues asap!!
+    if (green_state) {
+      bool is_head = green_state == 1;
+
+      // use num trains to determine how many to load for current term
+      if (is_head) {
+        for (int i=0; i<num_greens; i+=2) {
+          Train train(GREEN, i);
+          station.station_use_queue.push(train);
+        }
+      } else {
+        for (int i=1; i<num_greens; i+=2) {
+          Train train(GREEN, i);
+          station.station_use_queue.push(train);
+        }
+      }
+    }
+
+    if (yellow_state) {
+      bool is_head = yellow_state == 1;
+
+      // use num trains to determine how many to load for current term
+      if (is_head) {
+        for (int i=0; i<num_yellows; i+=2) {
+          Train train(YELLOW, i);
+          station.station_use_queue.push(train);
+        }
+      } else {
+        for (int i=1; i<num_yellows; i+=2) {
+          Train train(YELLOW, i);
+          station.station_use_queue.push(train);
+        }
+      }
+    }
+
+    if (blue_state) {
+      bool is_head = blue_state == 1;
+
+      // use num trains to determine how many to load for current term
+      if (is_head) {
+        for (int i=0; i<num_blues; i+=2) {
+          Train train(BLUE, i);
+          station.station_use_queue.push(train);
+        }
+      } else {
+        for (int i=1; i<num_blues; i+=2) {
+          Train train(BLUE, i);
+          station.station_use_queue.push(train);
+        }
+      }
+    }
+
+    if (!station.station_use_queue.empty())
+      station.generate_random_loading_time();
 
   } else if (my_id < master) {
 //    // link processes
