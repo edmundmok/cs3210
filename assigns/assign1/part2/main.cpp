@@ -66,15 +66,15 @@ int main(int argc, char* argv[]) {
   MPI_Bcast(&S, 1, MPI_INT, master, MPI_COMM_WORLD);
 
   // Determine if we should continue or just exit here
-//  if (num_procs != correct_num_procs) {
-//    if (my_id == master) {
-//      printf("Incorrect number of processes used, should be %d for the given input. "
-//               "Use num links (count shared as 1) + num stations + 1 (master). "
-//               "Terminating.\n", correct_num_procs);
-//    }
-//    MPI_Finalize();
-//    exit(0);
-//  }
+  if (num_procs != correct_num_procs) {
+    if (my_id == master) {
+      printf("Incorrect number of processes used, should be %d for the given input. "
+               "Use num links (count shared as 1) + num stations + 1 (master). "
+               "Terminating.\n", correct_num_procs);
+    }
+    MPI_Finalize();
+    exit(0);
+  }
 
   int N;
 
@@ -127,12 +127,12 @@ int main(int argc, char* argv[]) {
     for (int i=0; i<S; i++) {
       for (int j=0; j<S; j++) {
         if (dist_matrix[i][j] == 0) continue;
-//        // Send distance
-//        MPI_Send(&dist_matrix[i][j], 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
-//
-//        // Send i and j
-//        MPI_Send(&i, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
-//        MPI_Send(&j, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+        // Send distance
+        MPI_Send(&dist_matrix[i][j], 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+
+        // Send i and j
+        MPI_Send(&i, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
+        MPI_Send(&j, 1, MPI_INT, proc_rank, 0, MPI_COMM_WORLD);
 
         link_rank[i][j] = proc_rank++;
       }
@@ -271,7 +271,6 @@ int main(int argc, char* argv[]) {
 //      }
 //      cout << endl;
 //    }
-
 
     // Allocate stations to remaining processes
     for (int i=0; i<S; i++) {
@@ -452,18 +451,17 @@ int main(int argc, char* argv[]) {
       station.generate_random_loading_time();
 
   } else if (my_id < master) {
-//    // link processes
-//    // get the link object from master
-//    int dist, left, right;
-//
-//    // Get the distance
-//    MPI_Recv(&track.dist, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-//    MPI_Recv(&track.source, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-//    MPI_Recv(&track.dest, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-//    track.remaining_time = track.dist;
+    // link processes
+    // get the link object from master
+    int dist, left, right;
+
+    // Get the distance
+    MPI_Recv(&track.dist, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&track.source, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&track.dest, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    track.remaining_time = track.dist;
   }
-
-
+  
   MPI_Barrier(MPI_COMM_WORLD);
 
   // Send time ticks to all
@@ -472,6 +470,7 @@ int main(int argc, char* argv[]) {
   MPI_Barrier(MPI_COMM_WORLD);
 
   simulate(N, S, my_id, master);
+
 
   // Run simulation
 //  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
