@@ -10,6 +10,21 @@
 #define YELLOW 'Y'
 #define BLUE 'B'
 
+void simulate(int N, int my_id, int master) {
+  for (int i=0; i<N; i++) {
+    if (my_id == master) {
+      // PRINT STATE OF ALL TRAINS
+      
+    }
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // ALL RUN ONE TICK
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+  }
+}
+
 int main(int argc, char* argv[]) {
 
   // Initialize OpenMPI up front otherwise there will be some issues
@@ -56,6 +71,8 @@ int main(int argc, char* argv[]) {
 //    exit(0);
 //  }
 
+  int N;
+
   if (my_id == master) {
     freopen(INPUT_FILE_NAME, "r", stdin);
     // Read number of train stations in network
@@ -88,7 +105,7 @@ int main(int argc, char* argv[]) {
     read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, yellow_line);
     read_stations_for_line(cin, stations_strs, stations_map, dist_matrix, blue_line);
 
-    int N = read_integer_line(cin);
+    N = read_integer_line(cin);
 
     vector<string> num_trains;
     read_comma_sep_line(cin, num_trains);
@@ -441,7 +458,15 @@ int main(int argc, char* argv[]) {
 //    track.remaining_time = track.dist;
   }
 
+
   MPI_Barrier(MPI_COMM_WORLD);
+
+  // Send time ticks to all
+  MPI_Bcast(&N, 1, MPI_INT, master, MPI_COMM_WORLD);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  simulate(N, my_id, master);
 
   // Run simulation
 //  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
