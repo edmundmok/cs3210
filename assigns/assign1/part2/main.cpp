@@ -9,6 +9,8 @@
 #define GREEN 'g'
 #define YELLOW 'y'
 #define BLUE 'b'
+#define DUMMY_TRAIN 0
+#define REAL_TRAIN 1
 
 void simulate(int N, int S, int my_id, int master, int total_trains,
               Track& track, Station& station) {
@@ -56,6 +58,53 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     MPI_Barrier(MPI_COMM_WORLD);
 
     // ALL RUN ONE TICK
+
+    if (my_id < S) {
+      // station
+      bool has_valid_msg = false;
+      if (not station.station_use_queue.empty()) {
+        assert(station.remaining_time > 0);
+        station.remaining_time--;
+        if (station.remaining_time == 0) {
+          has_valid_msg = true;
+          serialized_train[0] = station.station_use_queue.front().line;
+          serialized_train[1] = station.station_use_queue.front().train_num;
+        }
+      }
+      
+      // update train timings
+
+      if (not station.station_use_queue.empty()) {
+        station.generate_random_loading_time();
+      }
+
+    } else if (my_id < master) {
+      // track
+      bool has_valid_msg = false;
+      if (not track.track_use_queue.empty()) {
+        assert(track.remaining_time > 0);
+        track.remaining_time--;
+        if (track.remaining_time == 0) {
+          has_valid_msg = true;
+          serialized_train[0] = track.track_use_queue.front().line;
+          serialized_train[1] = track.track_use_queue.front().train_num;
+        }
+      }
+
+      MPI_Send(&serialized_train, 2, MPI_INT, track.dest,
+               (has_valid_msg) ? REAL_TRAIN : DUMMY_TRAIN, MPI_COMM_WORLD);
+
+      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+      if (status.MPI_TAG == REAL_TRAIN) {
+        Train train(serialized_train[0], serialized_train[1]);
+        track.track_use_queue.push_back(train);
+      }
+
+      if (not track.track_use_queue.empty()) {
+        track.remaining_time = track.dist;
+      }
+    }
 
     MPI_Barrier(MPI_COMM_WORLD);
 
