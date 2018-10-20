@@ -135,9 +135,13 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
 
         MPI_Send(&serialized_train, 2, MPI_INT, green_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
       }
-
+      
+      unordered_set<int> received;
       // Receive all updates from prev tracks
       for (int blue_rank : station.blue_listen) {
+        if (received.find(blue_rank) != received.end()) continue;
+        received.insert(blue_rank);
+
         MPI_Recv(&serialized_train, 2, MPI_INT, blue_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
@@ -145,6 +149,9 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       }
 
       for (int green_rank: station.green_listen) {
+        if (received.find(green_rank) != received.end()) continue;
+        received.insert(green_rank);
+
         MPI_Recv(&serialized_train, 2, MPI_INT, green_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
@@ -152,6 +159,9 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       }
 
       for (int yellow_rank: station.yellow_listen) {
+        if (received.find(yellow_rank) != received.end()) continue;
+        received.insert(yellow_rank);
+
         MPI_Recv(&serialized_train, 2, MPI_INT, yellow_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
@@ -192,7 +202,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         track.remaining_time = track.dist;
       }
     }
-
 
     MPI_Barrier(MPI_COMM_WORLD);
 
