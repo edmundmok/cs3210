@@ -67,7 +67,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       int next_track = -99;
       Train front_train(0, 0);
 
-      if (not station.station_use_queue.empty()) {
+      if (!station.station_use_queue.empty()) {
         assert(station.remaining_time > 0);
         station.remaining_time--;
         if (station.remaining_time == 0) {
@@ -145,7 +145,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         MPI_Recv(&serialized_train, 2, MPI_INT, blue_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
-        cout << "new train (" << char(train.line) << "," << train.train_num << ") at station " << my_id << endl;
         station.station_use_queue.push_back(make_pair(train, blue_rank));
       }
 
@@ -156,7 +155,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         MPI_Recv(&serialized_train, 2, MPI_INT, green_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
-        cout << "new train (" << char(train.line) << "," << train.train_num << ") at station " << my_id << endl;
         station.station_use_queue.push_back(make_pair(train, green_rank));
       }
 
@@ -167,15 +165,14 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         MPI_Recv(&serialized_train, 2, MPI_INT, yellow_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
-        cout << "new train (" << char(train.line) << "," << train.train_num << ") at station " << my_id << endl;
         station.station_use_queue.push_back(make_pair(train, yellow_rank));
       }
 
       // update train timings
-
-      if (not station.station_use_queue.empty()) {
-        station.generate_random_loading_time();
+      if (real_train_sent) {
+        station.remaining_time = generate_random_loading_time(station.popularity);
       }
+
 
     } else if (my_id < master) {
       // track
@@ -660,10 +657,7 @@ int main(int argc, char* argv[]) {
         }
       }
     }
-
-    if (!station.station_use_queue.empty()) {
-      station.generate_random_loading_time();
-    }
+    station.remaining_time = generate_random_loading_time(station.popularity);
 
   } else if (my_id < master) {
     // link processes
