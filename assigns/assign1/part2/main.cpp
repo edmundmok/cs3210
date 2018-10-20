@@ -250,6 +250,29 @@ int main(int argc, char* argv[]) {
 
     // Allocate stations to remaining processes
     for (int i=0; i<S; i++) {
+      // send train counts (g, y b)
+      // send is head / tail for g, y, b
+      // 0 for none, 1 for head, 2 for tail
+      MPI_Send(&train_counts.num_greens, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+      MPI_Send(&train_counts.num_yellows, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+      MPI_Send(&train_counts.num_blues, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+
+      int green_val, yellow_val, blue_val;
+      green_val = yellow_val = blue_val = 0;
+
+      if (i == green_line[0]) green_val = 1;
+      else if (i == green_line[green_line.size()-1]) green_val = 2;
+
+      if (i == yellow_line[0]) yellow_val = 1;
+      else if (i == yellow_line[yellow_line.size()-1]) yellow_val = 2;
+
+      if (i == blue_line[0]) blue_val = 1;
+      else if (i == blue_line[blue_line.size()-1]) blue_val = 2;
+
+      MPI_Send(&green_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+      MPI_Send(&yellow_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+      MPI_Send(&blue_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+
       // send pairings by batches
       // (Num) of greens
       int num = green_line_pairings[i].size();
@@ -289,6 +312,18 @@ int main(int argc, char* argv[]) {
   Station station;
   if (my_id < S) {
     // station processes
+
+    int num_greens, num_yellows, num_blues;
+    MPI_Recv(&num_greens, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&num_yellows, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&num_blues, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+    // station state (0, 1 head, 2 tail)
+    int green_state, yellow_state, blue_state;
+    MPI_Recv(&green_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&yellow_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&blue_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
     int num, listen, send;
     // green pairings
     MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
@@ -330,6 +365,7 @@ int main(int argc, char* argv[]) {
       station.blue_send.push_back(send);
     }
 
+    // initialize trains into queues asap!!
 
   } else if (my_id < master) {
 //    // link processes
