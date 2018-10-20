@@ -191,12 +191,11 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         }
       }
 
-      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG,
-               MPI_COMM_WORLD, &status);
-
-//      if (has_valid_msg) cout << char(serialized_train[0]) << endl;
       MPI_Send(&serialized_train, 2, MPI_INT, track.dest,
                (has_valid_msg) ? REAL_TRAIN : DUMMY_TRAIN, MPI_COMM_WORLD);
+
+      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG,
+               MPI_COMM_WORLD, &status);
 
       if (status.MPI_TAG == REAL_TRAIN) {
         Train train(serialized_train[0], serialized_train[1]);
