@@ -286,14 +286,50 @@ int main(int argc, char* argv[]) {
 
   MPI_Status status;
   Track track;
+  Station station;
   if (my_id < S) {
     // station processes
-    int num;
+    int num, listen, send;
     // green pairings
+    MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    for (int i=0; i<num; i++) {
+      // receive "listen" half
+      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+      // receive "send" half
+      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+      station.green_listen.push_back(listen);
+      station.green_send.push_back(send);
+    }
 
     // yellow pairings
+    MPI_Recv(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+    for (int i=0; i<num; i++) {
+      // receive "listen" half
+      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+      // receive "send" half
+      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+      station.yellow_listen.push_back(listen);
+      station.yellow_send.push_back(send);
+    }
+
 
     // blue pairings
+    MPI_Recv(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+    for (int i=0; i<num; i++) {
+      // receive "listen" half
+      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+      // receive "send" half
+      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+      station.blue_listen.push_back(listen);
+      station.blue_send.push_back(send);
+    }
+
 
   } else if (my_id < master) {
 //    // link processes
