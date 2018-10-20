@@ -10,12 +10,17 @@
 #define YELLOW 'Y'
 #define BLUE 'B'
 
-void simulate(int N, int my_id, int master) {
+void simulate(int N, int S, int my_id, int master) {
   for (int i=0; i<N; i++) {
-    if (my_id == master) {
+    if (my_id < S) {
+      // send state of trains
+    } else if (my_id < master) {
+      // send state of trains
+    } else {
       // PRINT STATE OF ALL TRAINS
-      
+
     }
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     // ALL RUN ONE TICK
@@ -466,7 +471,7 @@ int main(int argc, char* argv[]) {
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  simulate(N, my_id, master);
+  simulate(N, S, my_id, master);
 
   // Run simulation
 //  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
