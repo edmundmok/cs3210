@@ -35,7 +35,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         serialized_train[0] = train.line;
         serialized_train[1] = train.train_num;
         serialized_train[2] = track.source;
-        serialized_train[2] = track.dest;
+        serialized_train[3] = track.dest;
         MPI_Send(&serialized_train, 4, MPI_INT, master,
                  (track.track_use_queue.front().train_num == train.train_num
                  && track.track_use_queue.front().line == train.line) ? 4 : 3, MPI_COMM_WORLD);
@@ -50,7 +50,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         cout << char(serialized_train[0]) << serialized_train[1] << "-s" << serialized_train[2];
         // link number
         if (status.MPI_TAG == 4) {
-          cout << "->" << serialized_train[3];
+          cout << "->s" << serialized_train[3];
         }
         cout << ", ";
       }
@@ -65,13 +65,17 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       // station
       bool has_valid_msg = false;
       int next_track = -99;
+      Train front_train(0, 0);
+
       if (not station.station_use_queue.empty()) {
         assert(station.remaining_time > 0);
         station.remaining_time--;
         if (station.remaining_time == 0) {
           has_valid_msg = true;
-          serialized_train[0] = station.station_use_queue.front().first.line;
-          serialized_train[1] = station.station_use_queue.front().first.train_num;
+          front_train.line = station.station_use_queue.front().first.line;
+          front_train.train_num = station.station_use_queue.front().first.train_num;
+          serialized_train[0] = front_train.line;
+          serialized_train[1] = front_train.train_num;
           int prev_track = station.station_use_queue.front().second;
 
           if (serialized_train[0] == GREEN) {
@@ -87,8 +91,12 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
 
       bool real_train_sent = false;
 
+      unordered_set<int> updated;
       // Send updates to all next tracks
       for (int blue_rank : station.blue_send) {
+        if (updated.find(blue_rank) != updated.end()) continue;
+        updated.insert(blue_rank);
+
         if (has_valid_msg and blue_rank == next_track and !real_train_sent) {
           MPI_Send(&serialized_train, 2, MPI_INT, blue_rank, REAL_TRAIN, MPI_COMM_WORLD);
           station.station_use_queue.pop_front();
@@ -99,18 +107,10 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         MPI_Send(&serialized_train, 2, MPI_INT, blue_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
       }
 
-      for (int green_rank : station.green_send) {
-        if (has_valid_msg and green_rank == next_track and !real_train_sent) {
-          MPI_Send(&serialized_train, 2, MPI_INT, green_rank, REAL_TRAIN, MPI_COMM_WORLD);
-          station.station_use_queue.pop_front();
-          real_train_sent = true;
-          continue;
-        }
+      for (int yellow_rank : station.yellow_send) {
+        if (updated.find(yellow_rank) != updated.end()) continue;
+        updated.insert(yellow_rank);
 
-        MPI_Send(&serialized_train, 2, MPI_INT, green_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
-      }
-
-      for (int yellow_rank: station.yellow_send) {
         if (has_valid_msg and yellow_rank == next_track and !real_train_sent) {
           MPI_Send(&serialized_train, 2, MPI_INT, yellow_rank, REAL_TRAIN, MPI_COMM_WORLD);
           station.station_use_queue.pop_front();
@@ -119,6 +119,21 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         }
 
         MPI_Send(&serialized_train, 2, MPI_INT, yellow_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
+      }
+
+
+      for (int green_rank : station.green_send) {
+        if (updated.find(green_rank) != updated.end()) continue;
+        updated.insert(green_rank);
+
+        if (has_valid_msg and green_rank == next_track and !real_train_sent) {
+          MPI_Send(&serialized_train, 2, MPI_INT, green_rank, REAL_TRAIN, MPI_COMM_WORLD);
+          station.station_use_queue.pop_front();
+          real_train_sent = true;
+          continue;
+        }
+
+        MPI_Send(&serialized_train, 2, MPI_INT, green_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
       }
 
       // Receive all updates from prev tracks
@@ -136,11 +151,11 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         station.station_use_queue.push_back(make_pair(train, green_rank));
       }
 
-      for (int blue_rank: station.blue_listen) {
-        MPI_Recv(&serialized_train, 2, MPI_INT, blue_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      for (int yellow_rank: station.yellow_listen) {
+        MPI_Recv(&serialized_train, 2, MPI_INT, yellow_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         if (status.MPI_TAG == DUMMY_TRAIN) continue;
         Train train(serialized_train[0], serialized_train[1]);
-        station.station_use_queue.push_back(make_pair(train, blue_rank));
+        station.station_use_queue.push_back(make_pair(train, yellow_rank));
       }
 
       // update train timings
@@ -163,10 +178,10 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         }
       }
 
+      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
       MPI_Send(&serialized_train, 2, MPI_INT, track.dest,
                (has_valid_msg) ? REAL_TRAIN : DUMMY_TRAIN, MPI_COMM_WORLD);
-
-      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
       if (status.MPI_TAG == REAL_TRAIN) {
         Train train(serialized_train[0], serialized_train[1]);
@@ -177,6 +192,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         track.remaining_time = track.dist;
       }
     }
+
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -656,11 +672,6 @@ int main(int argc, char* argv[]) {
   MPI_Barrier(MPI_COMM_WORLD);
 
   simulate(N, S, my_id, master, total_trains, track, station);
-
-
-  // Run simulation
-//  run_simulation(N, train_counts, blue_line, yellow_line, green_line,
-//                 station_popularities, dist_matrix, station_use, track_use);
 
   MPI_Finalize();
 
