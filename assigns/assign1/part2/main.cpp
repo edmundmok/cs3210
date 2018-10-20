@@ -377,7 +377,7 @@ int main(int argc, char* argv[]) {
       }
       else if (i == green_line[green_line.size()-1]) {
         green_val = 2;
-        green_tag = link_rank[green_line.size()-2][i];
+        green_tag = link_rank[green_line[green_line.size()-2]][i];
       }
 
       if (i == yellow_line[0]) {
@@ -386,16 +386,16 @@ int main(int argc, char* argv[]) {
       }
       else if (i == yellow_line[yellow_line.size()-1]) {
         yellow_val = 2;
-        yellow_tag = link_rank[yellow_line.size()-2][i];
+        yellow_tag = link_rank[yellow_line[yellow_line.size()-2]][i];
       }
 
       if (i == blue_line[0]) {
         blue_val = 1;
-        blue_tag = link_rank[blue_line.size()-2][i];
+        blue_tag = link_rank[blue_line[1]][i];
       }
       else if (i == blue_line[blue_line.size()-1]) {
         blue_val = 2;
-        blue_tag = link_rank[blue_line.size()-2][i];
+        blue_tag = link_rank[blue_line[blue_line.size()-2]][i];
       }
 
       // Send station state (0, 1 head, 2 tail)
@@ -508,6 +508,8 @@ int main(int argc, char* argv[]) {
 
     // initialize trains into queues asap!!
     if (green_state) {
+//      cout << "station number: " << my_id <<  " green tag " << green_tag << endl;
+
       bool is_head = green_state == 1;
 
       // use num trains to determine how many to load for current term
@@ -525,6 +527,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (yellow_state) {
+//      cout << "station number: " << my_id << " yellow tag " << yellow_tag << endl;
+
       bool is_head = yellow_state == 1;
 
       // use num trains to determine how many to load for current term
@@ -542,6 +546,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (blue_state) {
+//      cout << "station number: " << my_id << " blue tag " << blue_tag << endl;
+
       bool is_head = blue_state == 1;
 
       // use num trains to determine how many to load for current term
