@@ -278,9 +278,9 @@ int main(int argc, char* argv[]) {
       // send train counts (g, y b)
       // send is head / tail for g, y, b
       // 0 for none, 1 for head, 2 for tail
-      MPI_Send(&train_counts.num_greens, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
-      MPI_Send(&train_counts.num_yellows, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
-      MPI_Send(&train_counts.num_blues, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+      MPI_Send(&train_counts.num_greens, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&train_counts.num_yellows, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&train_counts.num_blues, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
       int green_val, yellow_val, blue_val;
       green_val = yellow_val = blue_val = 0;
@@ -294,12 +294,12 @@ int main(int argc, char* argv[]) {
       if (i == blue_line[0]) blue_val = 1;
       else if (i == blue_line[blue_line.size()-1]) blue_val = 2;
 
-      MPI_Send(&green_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
-      MPI_Send(&yellow_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
-      MPI_Send(&blue_val, 1, MPI_Int, i, 0, MPI_COMM_WOLRD);
+      MPI_Send(&green_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&yellow_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&blue_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
       // send station popularity
-      MPI_Send(&station_popularities[i], 1, MPI_Int, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&station_popularities[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
       // send pairings by batches
       // (Num) of greens
@@ -342,41 +342,41 @@ int main(int argc, char* argv[]) {
     // station processes
 
     int num_greens, num_yellows, num_blues;
-    MPI_Recv(&num_greens, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
-    MPI_Recv(&num_yellows, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
-    MPI_Recv(&num_blues, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&num_greens, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&num_yellows, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&num_blues, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
     // station state (0, 1 head, 2 tail)
     int green_state, yellow_state, blue_state;
-    MPI_Recv(&green_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
-    MPI_Recv(&yellow_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
-    MPI_Recv(&blue_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&green_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&yellow_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&blue_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
     // station popularity
-    MPI_Recv(&station.popularity, 1, MPI_Int, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&station.popularity, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
     int num, listen, send;
     // green pairings
-    MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+    MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
     for (int i=0; i<num; i++) {
       // receive "listen" half
-      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
       // receive "send" half
-      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
       station.green_listen.push_back(listen);
       station.green_send.push_back(send);
     }
 
     // yellow pairings
-    MPI_Recv(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+    MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
     for (int i=0; i<num; i++) {
       // receive "listen" half
-      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
       // receive "send" half
-      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
       station.yellow_listen.push_back(listen);
       station.yellow_send.push_back(send);
@@ -384,13 +384,13 @@ int main(int argc, char* argv[]) {
 
 
     // blue pairings
-    MPI_Recv(&num, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+    MPI_Recv(&num, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
     for (int i=0; i<num; i++) {
       // receive "listen" half
-      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+      MPI_Recv(&listen, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
       // receive "send" half
-      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD);
+      MPI_Recv(&send, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
       station.blue_listen.push_back(listen);
       station.blue_send.push_back(send);
