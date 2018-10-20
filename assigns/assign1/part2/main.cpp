@@ -21,7 +21,8 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
   for (int i=0; i<N; i++) {
     if (my_id < S) {
       // station: send state of trains
-      for (Train& train: station.station_use_queue) {
+      for (auto& pair: station.station_use_queue) {
+        Train& train = pair.first;
         serialized_train[0] = train.line;
         serialized_train[1] = train.train_num;
         serialized_train[2] = my_id;
@@ -68,8 +69,8 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         station.remaining_time--;
         if (station.remaining_time == 0) {
           has_valid_msg = true;
-          serialized_train[0] = station.station_use_queue.front().line;
-          serialized_train[1] = station.station_use_queue.front().train_num;
+          serialized_train[0] = station.station_use_queue.front().first.line;
+          serialized_train[1] = station.station_use_queue.front().first.train_num;
         }
       }
 
@@ -366,20 +367,42 @@ int main(int argc, char* argv[]) {
       MPI_Send(&train_counts.num_blues, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
       int green_val, yellow_val, blue_val;
+      int green_tag, yellow_tag, blue_tag;
       green_val = yellow_val = blue_val = 0;
+      green_tag = yellow_tag = blue_tag = 0;
 
-      if (i == green_line[0]) green_val = 1;
-      else if (i == green_line[green_line.size()-1]) green_val = 2;
+      if (i == green_line[0]) {
+        green_val = 1;
+        green_tag = link_rank[green_line[1]][i];
+      }
+      else if (i == green_line[green_line.size()-1]) {
+        green_val = 2;
+        green_tag = link_rank[green_line.size()-2][i];
+      }
 
-      if (i == yellow_line[0]) yellow_val = 1;
-      else if (i == yellow_line[yellow_line.size()-1]) yellow_val = 2;
+      if (i == yellow_line[0]) {
+        yellow_val = 1;
+        yellow_tag = link_rank[yellow_line[1]][i];
+      }
+      else if (i == yellow_line[yellow_line.size()-1]) {
+        yellow_val = 2;
+        yellow_tag = link_rank[yellow_line.size()-2][i];
+      }
 
-      if (i == blue_line[0]) blue_val = 1;
-      else if (i == blue_line[blue_line.size()-1]) blue_val = 2;
+      if (i == blue_line[0]) {
+        blue_val = 1;
+        blue_tag = link_rank[blue_line.size()-2][i];
+      }
+      else if (i == blue_line[blue_line.size()-1]) {
+        blue_val = 2;
+        blue_tag = link_rank[blue_line.size()-2][i];
+      }
 
-      MPI_Send(&green_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-      MPI_Send(&yellow_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-      MPI_Send(&blue_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      // Send station state (0, 1 head, 2 tail)
+      // station tag is depenedent on terminal state
+      MPI_Send(&green_val, 1, MPI_INT, i, green_tag, MPI_COMM_WORLD);
+      MPI_Send(&yellow_val, 1, MPI_INT, i, yellow_tag, MPI_COMM_WORLD);
+      MPI_Send(&blue_val, 1, MPI_INT, i, blue_tag, MPI_COMM_WORLD);
 
       // send station popularity
       MPI_Send(&station_popularities[i], 1, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
@@ -431,9 +454,13 @@ int main(int argc, char* argv[]) {
 
     // station state (0, 1 head, 2 tail)
     int green_state, yellow_state, blue_state;
-    MPI_Recv(&green_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-    MPI_Recv(&yellow_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
-    MPI_Recv(&blue_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    int green_tag, yellow_tag, blue_tag;
+    MPI_Recv(&green_state, 1, MPI_INT, master, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    green_tag = status.MPI_TAG;
+    MPI_Recv(&yellow_state, 1, MPI_INT, master, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    yellow_tag = status.MPI_TAG;
+    MPI_Recv(&blue_state, 1, MPI_INT, master, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    blue_tag = status.MPI_TAG;
 
     // station popularity
     MPI_Recv(&station.popularity, 1, MPI_FLOAT, master, 0, MPI_COMM_WORLD, &status);
@@ -487,12 +514,12 @@ int main(int argc, char* argv[]) {
       if (is_head) {
         for (int i=0; i<num_greens; i+=2) {
           Train train(GREEN, i);
-          station.station_use_queue.push_back(train);
+          station.station_use_queue.push_back(make_pair(train, green_tag));
         }
       } else {
         for (int i=1; i<num_greens; i+=2) {
           Train train(GREEN, i);
-          station.station_use_queue.push_back(train);
+          station.station_use_queue.push_back(make_pair(train, green_tag));
         }
       }
     }
@@ -504,12 +531,12 @@ int main(int argc, char* argv[]) {
       if (is_head) {
         for (int i=0; i<num_yellows; i+=2) {
           Train train(YELLOW, i);
-          station.station_use_queue.push_back(train);
+          station.station_use_queue.push_back(make_pair(train, yellow_tag));
         }
       } else {
         for (int i=1; i<num_yellows; i+=2) {
           Train train(YELLOW, i);
-          station.station_use_queue.push_back(train);
+          station.station_use_queue.push_back(make_pair(train, yellow_tag));
         }
       }
     }
@@ -521,12 +548,12 @@ int main(int argc, char* argv[]) {
       if (is_head) {
         for (int i=0; i<num_blues; i+=2) {
           Train train(BLUE, i);
-          station.station_use_queue.push_back(train);
+          station.station_use_queue.push_back(make_pair(train, blue_tag));
         }
       } else {
         for (int i=1; i<num_blues; i+=2) {
           Train train(BLUE, i);
-          station.station_use_queue.push_back(train);
+          station.station_use_queue.push_back(make_pair(train, blue_tag));
         }
       }
     }
