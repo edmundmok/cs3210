@@ -6,19 +6,51 @@
 #include "network.h"
 
 #define INPUT_FILE_NAME "in.txt"
-#define GREEN 'G'
-#define YELLOW 'Y'
-#define BLUE 'B'
+#define GREEN 'g'
+#define YELLOW 'y'
+#define BLUE 'b'
 
-void simulate(int N, int S, int my_id, int master) {
+void simulate(int N, int S, int my_id, int master, int total_trains,
+              Track& track, Station& station) {
+  MPI_Status status;
+  int serialized_train[4];
+
   for (int i=0; i<N; i++) {
     if (my_id < S) {
-      // send state of trains
-    } else if (my_id < master) {
-      // send state of trains
-    } else {
-      // PRINT STATE OF ALL TRAINS
+      // station: send state of trains
+      for (Train& train: station.station_use_queue) {
+        serialized_train[0] = train.line;
+        serialized_train[1] = train.train_num;
+        serialized_train[2] = my_id;
+        MPI_Send(&serialized_train, 4, MPI_INT, master, 3, MPI_COMM_WORLD);
+      }
 
+    } else if (my_id < master) {
+      // track: send state of trains
+      for (Train& train: track.track_use_queue) {
+        serialized_train[0] = train.line;
+        serialized_train[1] = train.train_num;
+        serialized_train[2] = track.source;
+        serialized_train[2] = track.dest;
+        MPI_Send(&serialized_train, 4, MPI_INT, master,
+                 (track.track_use_queue.front().train_num == train.train_num
+                 && track.track_use_queue.front().line == train.line) ? 4 : 3, MPI_COMM_WORLD);
+      }
+    } else {
+      cout << i << ": ";
+      // PRINT STATE OF ALL TRAINS
+      for (int j=0; j<total_trains; j++) {
+        MPI_Recv(&serialized_train, 4, MPI_INT, MPI_ANY_SOURCE,
+                 MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        // Train number and Station
+        cout << char(serialized_train[0]) << serialized_train[1] << "-s" << serialized_train[2];
+        // link number
+        if (status.MPI_TAG == 4) {
+          cout << "->" << serialized_train[3];
+        }
+        cout << ", ";
+      }
+      cout << "\n";
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -76,7 +108,7 @@ int main(int argc, char* argv[]) {
     exit(0);
   }
 
-  int N;
+  int N, total_trains;
 
   if (my_id == master) {
     freopen(INPUT_FILE_NAME, "r", stdin);
@@ -119,6 +151,7 @@ int main(int argc, char* argv[]) {
       num_blues = stoi(num_trains[2]);
 
     TrainCounts train_counts(num_greens, num_yellows, num_blues);
+    total_trains = train_counts.num_total;
 
     AdjMatrix link_rank(S, vector<int> (S));
 
@@ -403,12 +436,12 @@ int main(int argc, char* argv[]) {
       if (is_head) {
         for (int i=0; i<num_greens; i+=2) {
           Train train(GREEN, i);
-          station.station_use_queue.push(train);
+          station.station_use_queue.push_back(train);
         }
       } else {
         for (int i=1; i<num_greens; i+=2) {
           Train train(GREEN, i);
-          station.station_use_queue.push(train);
+          station.station_use_queue.push_back(train);
         }
       }
     }
@@ -420,12 +453,12 @@ int main(int argc, char* argv[]) {
       if (is_head) {
         for (int i=0; i<num_yellows; i+=2) {
           Train train(YELLOW, i);
-          station.station_use_queue.push(train);
+          station.station_use_queue.push_back(train);
         }
       } else {
         for (int i=1; i<num_yellows; i+=2) {
           Train train(YELLOW, i);
-          station.station_use_queue.push(train);
+          station.station_use_queue.push_back(train);
         }
       }
     }
@@ -437,12 +470,12 @@ int main(int argc, char* argv[]) {
       if (is_head) {
         for (int i=0; i<num_blues; i+=2) {
           Train train(BLUE, i);
-          station.station_use_queue.push(train);
+          station.station_use_queue.push_back(train);
         }
       } else {
         for (int i=1; i<num_blues; i+=2) {
           Train train(BLUE, i);
-          station.station_use_queue.push(train);
+          station.station_use_queue.push_back(train);
         }
       }
     }
@@ -461,7 +494,7 @@ int main(int argc, char* argv[]) {
     MPI_Recv(&track.dest, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
     track.remaining_time = track.dist;
   }
-  
+
   MPI_Barrier(MPI_COMM_WORLD);
 
   // Send time ticks to all
@@ -469,7 +502,7 @@ int main(int argc, char* argv[]) {
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  simulate(N, S, my_id, master);
+  simulate(N, S, my_id, master, total_trains, track, station);
 
 
   // Run simulation
