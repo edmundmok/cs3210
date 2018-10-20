@@ -64,6 +64,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     if (my_id < S) {
       // station
       bool has_valid_msg = false;
+      int next_track = -99;
       if (not station.station_use_queue.empty()) {
         assert(station.remaining_time > 0);
         station.remaining_time--;
@@ -71,7 +72,75 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
           has_valid_msg = true;
           serialized_train[0] = station.station_use_queue.front().first.line;
           serialized_train[1] = station.station_use_queue.front().first.train_num;
+          int prev_track = station.station_use_queue.front().second;
+
+          if (serialized_train[0] == GREEN) {
+            next_track = station.green_listen_send[prev_track];
+          } else if (serialized_train[0] == BLUE) {
+            next_track = station.blue_listen_send[prev_track];
+          } else {
+            next_track = station.yellow_listen_send[prev_track];
+          }
+
         }
+      }
+
+      bool real_train_sent = false;
+
+      // Send updates to all next tracks
+      for (int blue_rank : station.blue_send) {
+        if (has_valid_msg and blue_rank == next_track and !real_train_sent) {
+          MPI_Send(&serialized_train, 2, MPI_INT, blue_rank, REAL_TRAIN, MPI_COMM_WORLD);
+          station.station_use_queue.pop_front();
+          real_train_sent = true;
+          continue;
+        }
+
+        MPI_Send(&serialized_train, 2, MPI_INT, blue_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
+      }
+
+      for (int green_rank : station.green_send) {
+        if (has_valid_msg and green_rank == next_track and !real_train_sent) {
+          MPI_Send(&serialized_train, 2, MPI_INT, green_rank, REAL_TRAIN, MPI_COMM_WORLD);
+          station.station_use_queue.pop_front();
+          real_train_sent = true;
+          continue;
+        }
+
+        MPI_Send(&serialized_train, 2, MPI_INT, green_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
+      }
+
+      for (int yellow_rank: station.yellow_send) {
+        if (has_valid_msg and yellow_rank == next_track and !real_train_sent) {
+          MPI_Send(&serialized_train, 2, MPI_INT, yellow_rank, REAL_TRAIN, MPI_COMM_WORLD);
+          station.station_use_queue.pop_front();
+          real_train_sent = true;
+          continue;
+        }
+
+        MPI_Send(&serialized_train, 2, MPI_INT, yellow_rank, DUMMY_TRAIN, MPI_COMM_WORLD);
+      }
+
+      // Receive all updates from prev tracks
+      for (int blue_rank : station.blue_listen) {
+        MPI_Recv(&serialized_train, 2, MPI_INT, blue_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        if (status.MPI_TAG == DUMMY_TRAIN) continue;
+        Train train(serialized_train[0], serialized_train[1]);
+        station.station_use_queue.push_back(make_pair(train, blue_rank));
+      }
+
+      for (int green_rank: station.green_listen) {
+        MPI_Recv(&serialized_train, 2, MPI_INT, green_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        if (status.MPI_TAG == DUMMY_TRAIN) continue;
+        Train train(serialized_train[0], serialized_train[1]);
+        station.station_use_queue.push_back(make_pair(train, green_rank));
+      }
+
+      for (int blue_rank: station.blue_listen) {
+        MPI_Recv(&serialized_train, 2, MPI_INT, blue_rank, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        if (status.MPI_TAG == DUMMY_TRAIN) continue;
+        Train train(serialized_train[0], serialized_train[1]);
+        station.station_use_queue.push_back(make_pair(train, blue_rank));
       }
 
       // update train timings
@@ -97,7 +166,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       MPI_Send(&serialized_train, 2, MPI_INT, track.dest,
                (has_valid_msg) ? REAL_TRAIN : DUMMY_TRAIN, MPI_COMM_WORLD);
 
-//      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
       if (status.MPI_TAG == REAL_TRAIN) {
         Train train(serialized_train[0], serialized_train[1]);
@@ -477,6 +546,7 @@ int main(int argc, char* argv[]) {
 
       station.green_listen.push_back(listen);
       station.green_send.push_back(send);
+      station.green_listen_send[listen] = send;
     }
 
     // yellow pairings
@@ -490,6 +560,7 @@ int main(int argc, char* argv[]) {
 
       station.yellow_listen.push_back(listen);
       station.yellow_send.push_back(send);
+      station.yellow_listen_send[listen] = send;
     }
 
 
@@ -504,12 +575,11 @@ int main(int argc, char* argv[]) {
 
       station.blue_listen.push_back(listen);
       station.blue_send.push_back(send);
+      station.blue_listen_send[listen] = send;
     }
 
     // initialize trains into queues asap!!
     if (green_state) {
-//      cout << "station number: " << my_id <<  " green tag " << green_tag << endl;
-
       bool is_head = green_state == 1;
 
       // use num trains to determine how many to load for current term
@@ -527,7 +597,6 @@ int main(int argc, char* argv[]) {
     }
 
     if (yellow_state) {
-//      cout << "station number: " << my_id << " yellow tag " << yellow_tag << endl;
 
       bool is_head = yellow_state == 1;
 
@@ -546,7 +615,6 @@ int main(int argc, char* argv[]) {
     }
 
     if (blue_state) {
-//      cout << "station number: " << my_id << " blue tag " << blue_tag << endl;
 
       bool is_head = blue_state == 1;
 
