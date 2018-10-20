@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <mpi.h>
+#include <assert.h>
 
 #include "read_utils.h"
 #include "print_utils.h"
@@ -71,7 +72,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
           serialized_train[1] = station.station_use_queue.front().train_num;
         }
       }
-      
+
       // update train timings
 
       if (not station.station_use_queue.empty()) {
@@ -88,20 +89,21 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
           has_valid_msg = true;
           serialized_train[0] = track.track_use_queue.front().line;
           serialized_train[1] = track.track_use_queue.front().train_num;
+          track.track_use_queue.pop_front();
         }
       }
 
       MPI_Send(&serialized_train, 2, MPI_INT, track.dest,
                (has_valid_msg) ? REAL_TRAIN : DUMMY_TRAIN, MPI_COMM_WORLD);
 
-      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+//      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
       if (status.MPI_TAG == REAL_TRAIN) {
         Train train(serialized_train[0], serialized_train[1]);
         track.track_use_queue.push_back(train);
       }
 
-      if (not track.track_use_queue.empty()) {
+      if (track.remaining_time == 0 and not track.track_use_queue.empty()) {
         track.remaining_time = track.dist;
       }
     }
@@ -380,7 +382,7 @@ int main(int argc, char* argv[]) {
       MPI_Send(&blue_val, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
 
       // send station popularity
-      MPI_Send(&station_popularities[i], 1, MPI_INT, i, 0, MPI_COMM_WORLD);
+      MPI_Send(&station_popularities[i], 1, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
 
       // send pairings by batches
       // (Num) of greens
@@ -434,7 +436,7 @@ int main(int argc, char* argv[]) {
     MPI_Recv(&blue_state, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
 
     // station popularity
-    MPI_Recv(&station.popularity, 1, MPI_INT, master, 0, MPI_COMM_WORLD, &status);
+    MPI_Recv(&station.popularity, 1, MPI_FLOAT, master, 0, MPI_COMM_WORLD, &status);
 
     int num, listen, send;
     // green pairings
@@ -529,8 +531,9 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    if (!station.station_use_queue.empty())
+    if (!station.station_use_queue.empty()) {
       station.generate_random_loading_time();
+    }
 
   } else if (my_id < master) {
     // link processes
