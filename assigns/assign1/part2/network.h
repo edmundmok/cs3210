@@ -36,12 +36,11 @@ struct Train {
   int train_num;
 
   Train(char line, int train_num) : line(line), train_num(train_num) {}
-
 };
 
 struct StationStats {
 
-  bool is_valid = false;
+//  bool is_valid = false;
   int last_door_close = UNDEFINED;
   int num_waits = 0;
   int total_wait_time = 0;

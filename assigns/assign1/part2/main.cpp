@@ -65,15 +65,16 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       // station
       bool has_valid_msg = false;
       int next_track = -99;
-      Train front_train(0, 0);
+      Train front_train(-99, -99);
 
       if (!station.station_use_queue.empty()) {
         assert(station.remaining_time > 0);
         station.remaining_time--;
         if (station.remaining_time == 0) {
           has_valid_msg = true;
-          front_train.line = station.station_use_queue.front().first.line;
-          front_train.train_num = station.station_use_queue.front().first.train_num;
+          front_train = station.station_use_queue.front().first;
+//          front_train.line = station.station_use_queue.front().first.line;
+//          front_train.train_num = station.station_use_queue.front().first.train_num;
           serialized_train[0] = front_train.line;
           serialized_train[1] = front_train.train_num;
           int prev_track = station.station_use_queue.front().second;
@@ -168,6 +169,46 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         station.station_use_queue.push_back(make_pair(train, yellow_rank));
       }
 
+      // update station timings if a new train opened its doors
+      if (!station.station_use_queue.empty()) {
+        Train new_front_train = station.station_use_queue.front().first;
+        if (new_front_train.line != front_train.line and new_front_train.train_num != front_train.train_num) {
+          // a new train arrived.
+          if (new_front_train.line == BLUE) {
+            if (station.blue.last_door_close == UNDEFINED) {
+              station.blue.last_door_close = i;
+            } else {
+              station.blue.num_waits++;
+              int latest_wait = i - station.blue.last_door_close;
+              station.blue.total_wait_time += latest_wait;
+              station.blue.min_wait_time = min(station.blue.min_wait_time, latest_wait);
+              station.blue.max_wait_time = max(station.blue.max_wait_time, latest_wait);
+            }
+          } else if (new_front_train.line == YELLOW) {
+            if (station.yellow.last_door_close == UNDEFINED) {
+              station.yellow.last_door_close = i;
+            } else {
+              station.yellow.num_waits++;
+              int latest_wait = i - station.yellow.last_door_close;
+              station.yellow.total_wait_time += latest_wait;
+              station.yellow.min_wait_time = min(station.yellow.min_wait_time, latest_wait);
+              station.yellow.max_wait_time = max(station.yellow.max_wait_time, latest_wait);
+            }
+          } else {
+            assert(new_front_train.line == GREEN);
+            if (station.green.last_door_close == UNDEFINED) {
+              station.green.last_door_close = i;
+            } else {
+              station.green.num_waits++;
+              int latest_wait = i - station.green.last_door_close;
+              station.green.total_wait_time += latest_wait;
+              station.green.min_wait_time = min(station.green.min_wait_time, latest_wait);
+              station.green.max_wait_time = max(station.green.max_wait_time, latest_wait);
+            }
+          }
+        }
+      }
+
       // update train timings
       if (real_train_sent) {
         station.remaining_time = generate_random_loading_time(station.popularity);
@@ -207,6 +248,9 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     MPI_Barrier(MPI_COMM_WORLD);
 
   }
+
+  // Gather all timings
+  
 }
 
 int main(int argc, char* argv[]) {
