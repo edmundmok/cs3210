@@ -24,10 +24,10 @@ struct TrainCounts {
   int num_blues;
   int num_total;
 
-  TrainCounts(int num_greens, int num_yellows, int num_blues) :
-    num_greens(num_greens), num_yellows(num_yellows), num_blues(num_blues) {
-    num_total = num_greens + num_yellows + num_blues;
-  }
+//  TrainCounts(int num_greens, int num_yellows, int num_blues) :
+//    num_greens(num_greens), num_yellows(num_yellows), num_blues(num_blues) {
+//    num_total = num_greens + num_yellows + num_blues;
+//  }
 };
 
 struct Train {
@@ -37,6 +37,7 @@ struct Train {
 
   Train(char line, int train_num) : line(line), train_num(train_num) {}
 };
+
 
 struct StationStats {
 

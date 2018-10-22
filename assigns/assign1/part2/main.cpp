@@ -14,7 +14,7 @@
 #define REAL_TRAIN 1
 
 void simulate(int N, int S, int my_id, int master, int total_trains,
-              Track& track, Station& station) {
+              Track& track, Station& station, TrainCounts& train_counts) {
   MPI_Status status;
   int serialized_train[4];
 
@@ -249,8 +249,110 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
 
   }
 
+  int serialized_station_stat[5];
+
   // Gather all timings
-  
+  if (my_id == master) {
+    int blue_time = 0, green_time = 0, yellow_time = 0;
+    int blue_waits = 0, green_waits = 0, yellow_waits = 0;
+    int blue_min = INF, green_min = INF, yellow_min = INF;
+    int blue_max = NINF, green_max = NINF, yellow_max = NINF;
+
+    for (int i=0; i<S; i++) {
+      MPI_Recv(&serialized_station_stat, 5, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      if (serialized_station_stat[1] != 0) {
+        blue_waits += serialized_station_stat[1];
+        blue_time += serialized_station_stat[2];
+        blue_min = min(blue_min, serialized_station_stat[3]);
+        blue_max = max(blue_max, serialized_station_stat[4]);
+      }
+
+      MPI_Recv(&serialized_station_stat, 5, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      if (serialized_station_stat[1] != 0) {
+        green_waits += serialized_station_stat[1];
+        green_time += serialized_station_stat[2];
+        green_min = min(green_min, serialized_station_stat[3]);
+        green_max = max(green_max, serialized_station_stat[4]);
+      }
+
+      MPI_Recv(&serialized_station_stat, 5, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+      if (serialized_station_stat[1] != 0) {
+        yellow_waits += serialized_station_stat[1];
+        yellow_time += serialized_station_stat[2];
+        yellow_min = min(yellow_min, serialized_station_stat[3]);
+        yellow_max = max(yellow_max, serialized_station_stat[4]);
+      }
+    }
+
+    cout << "Averge waiting times:\n";
+    cout << "green: " << train_counts.num_greens << " trains -> "
+         << (green_time / float(green_waits)) << ", "
+         << green_max << ", "
+         << green_min << "\n";
+    cout << "yellow: " << train_counts.num_yellows << " trains -> "
+         << (yellow_time / float(yellow_waits)) << ", "
+         << yellow_max << ", "
+         << yellow_min << "\n";
+    cout << "blue: " << train_counts.num_blues << " trains -> "
+         << (blue_time / float(blue_waits)) << ", "
+         << blue_max << ", "
+         << blue_min << "\n";
+
+  } else if (my_id < S) {
+
+    // Send blue
+
+    if (station.blue.num_waits > 0) {
+      cout << "Blue stats: ";
+      cout << "num waits: " << station.blue.num_waits << endl;
+      cout << "wait time: " << station.blue.total_wait_time << endl;
+      cout << "min: " << station.blue.min_wait_time << ", max: " << station.blue.max_wait_time << endl;
+    }
+
+    serialized_station_stat[0] = station.blue.last_door_close;
+    serialized_station_stat[1] = station.blue.num_waits;
+    serialized_station_stat[2] = station.blue.total_wait_time;
+    serialized_station_stat[3] = station.blue.min_wait_time;
+    serialized_station_stat[4] = station.blue.max_wait_time;
+
+    MPI_Send(&serialized_station_stat, 5, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+    if (station.green.num_waits > 0) {
+      cout << "Green stats: ";
+      cout << "num waits: " << station.green.num_waits << endl;
+      cout << "time: " << station.green.total_wait_time << endl;
+      cout << "min: " << station.green.min_wait_time << ", max: " << station.green.max_wait_time << endl;
+    }
+
+
+    // Send green
+
+    serialized_station_stat[0] = station.green.last_door_close;
+    serialized_station_stat[1] = station.green.num_waits;
+    serialized_station_stat[2] = station.green.total_wait_time;
+    serialized_station_stat[3] = station.green.min_wait_time;
+    serialized_station_stat[4] = station.green.max_wait_time;
+
+    MPI_Send(&serialized_station_stat, 5, MPI_INT, master, 0, MPI_COMM_WORLD);
+
+    // Send yellow
+
+    if (station.yellow.num_waits > 0) {
+      cout << "Yellow stats: ";
+      cout << "num waits: " << station.yellow.num_waits << endl;
+      cout << "total wait time: " << station.yellow.total_wait_time << endl;
+      cout << "min: " << station.yellow.min_wait_time << ", max: " << station.yellow.max_wait_time << endl;
+    }
+
+
+    serialized_station_stat[0] = station.yellow.last_door_close;
+    serialized_station_stat[1] = station.yellow.num_waits;
+    serialized_station_stat[2] = station.yellow.total_wait_time;
+    serialized_station_stat[3] = station.yellow.min_wait_time;
+    serialized_station_stat[4] = station.yellow.max_wait_time;
+
+    MPI_Send(&serialized_station_stat, 5, MPI_INT, master, 0, MPI_COMM_WORLD);
+  }
 }
 
 int main(int argc, char* argv[]) {
@@ -300,6 +402,7 @@ int main(int argc, char* argv[]) {
   }
 
   int N, total_trains;
+  TrainCounts train_counts;
 
   if (my_id == master) {
     freopen(INPUT_FILE_NAME, "r", stdin);
@@ -341,7 +444,11 @@ int main(int argc, char* argv[]) {
       num_yellows = stoi(num_trains[1]),
       num_blues = stoi(num_trains[2]);
 
-    TrainCounts train_counts(num_greens, num_yellows, num_blues);
+//    TrainCounts train_counts(num_greens, num_yellows, num_blues);
+    train_counts.num_greens = num_greens;
+    train_counts.num_yellows = num_yellows;
+    train_counts.num_blues = num_blues;
+    train_counts.num_total = num_greens + num_yellows + num_blues;
     total_trains = train_counts.num_total;
 
     AdjMatrix link_rank(S, vector<int> (S));
@@ -722,7 +829,7 @@ int main(int argc, char* argv[]) {
 
   MPI_Barrier(MPI_COMM_WORLD);
 
-  simulate(N, S, my_id, master, total_trains, track, station);
+  simulate(N, S, my_id, master, total_trains, track, station, train_counts);
 
   MPI_Finalize();
 
