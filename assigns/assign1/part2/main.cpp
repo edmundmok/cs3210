@@ -169,41 +169,42 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         station.station_use_queue.push_back(make_pair(train, yellow_rank));
       }
 
+      if (real_train_sent) {
+        if (front_train.line == BLUE) {
+          station.blue.last_door_close = i;
+        } else if (front_train.line == YELLOW) {
+          station.yellow.last_door_close = i;
+        } else {
+          station.green.last_door_close = i;
+        }
+      }
+
       // update station timings if a new train opened its doors
       if (!station.station_use_queue.empty()) {
         Train new_front_train = station.station_use_queue.front().first;
         if (new_front_train.line != front_train.line and new_front_train.train_num != front_train.train_num) {
           // a new train arrived.
           if (new_front_train.line == BLUE) {
-            if (station.blue.last_door_close == UNDEFINED) {
-              station.blue.last_door_close = i;
-            } else {
+            if (station.blue.last_door_close != UNDEFINED) {
               station.blue.num_waits++;
               int latest_wait = i - station.blue.last_door_close;
-              station.blue.last_door_close = i;
               station.blue.total_wait_time += latest_wait;
               station.blue.min_wait_time = min(station.blue.min_wait_time, latest_wait);
               station.blue.max_wait_time = max(station.blue.max_wait_time, latest_wait);
             }
           } else if (new_front_train.line == YELLOW) {
-            if (station.yellow.last_door_close == UNDEFINED) {
-              station.yellow.last_door_close = i;
-            } else {
+            if (station.yellow.last_door_close != UNDEFINED) {
               station.yellow.num_waits++;
               int latest_wait = i - station.yellow.last_door_close;
-              station.yellow.last_door_close = i;
               station.yellow.total_wait_time += latest_wait;
               station.yellow.min_wait_time = min(station.yellow.min_wait_time, latest_wait);
               station.yellow.max_wait_time = max(station.yellow.max_wait_time, latest_wait);
             }
           } else {
             assert(new_front_train.line == GREEN);
-            if (station.green.last_door_close == UNDEFINED) {
-              station.green.last_door_close = i;
-            } else {
+            if (station.green.last_door_close != UNDEFINED) {
               station.green.num_waits++;
               int latest_wait = i - station.green.last_door_close;
-              station.green.last_door_close = i;
               station.green.total_wait_time += latest_wait;
               station.green.min_wait_time = min(station.green.min_wait_time, latest_wait);
               station.green.max_wait_time = max(station.green.max_wait_time, latest_wait);
@@ -265,7 +266,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       // We need to ignore terminals because they
 
       MPI_Recv(&serialized_station_stat, 5, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      if (serialized_station_stat[1] != 0) {
+      if (serialized_station_stat[1] > 0) {
         blue_waits += serialized_station_stat[1];
         blue_time += serialized_station_stat[2];
         blue_min = min(blue_min, serialized_station_stat[3]);
@@ -273,7 +274,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       }
 
       MPI_Recv(&serialized_station_stat, 5, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      if (serialized_station_stat[1] != 0) {
+      if (serialized_station_stat[1] > 0) {
         green_waits += serialized_station_stat[1];
         green_time += serialized_station_stat[2];
         green_min = min(green_min, serialized_station_stat[3]);
@@ -281,7 +282,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       }
 
       MPI_Recv(&serialized_station_stat, 5, MPI_INT, i, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-      if (serialized_station_stat[1] != 0) {
+      if (serialized_station_stat[1] > 0) {
         yellow_waits += serialized_station_stat[1];
         yellow_time += serialized_station_stat[2];
         yellow_min = min(yellow_min, serialized_station_stat[3]);
@@ -308,7 +309,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     // Send blue
 
 //    if (station.blue.num_waits > 0) {
-//      cout << "Blue stats: ";
+//      cout << "Station " << my_id << "Blue stats: " << endl;
 //      cout << "num waits: " << station.blue.num_waits << endl;
 //      cout << "wait time: " << station.blue.total_wait_time << endl;
 //      cout << "min: " << station.blue.min_wait_time << ", max: " << station.blue.max_wait_time << endl;
@@ -323,7 +324,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     MPI_Send(&serialized_station_stat, 5, MPI_INT, master, 0, MPI_COMM_WORLD);
 
 //    if (station.green.num_waits > 0) {
-//      cout << "Green stats: ";
+//      cout << "Station " << my_id << "Green stats: " << endl;
 //      cout << "num waits: " << station.green.num_waits << endl;
 //      cout << "time: " << station.green.total_wait_time << endl;
 //      cout << "min: " << station.green.min_wait_time << ", max: " << station.green.max_wait_time << endl;
@@ -343,7 +344,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     // Send yellow
 
 //    if (station.yellow.num_waits > 0) {
-//      cout << "Yellow stats: ";
+//      cout << "Station " << my_id << "Yellow stats: " << endl;
 //      cout << "num waits: " << station.yellow.num_waits << endl;
 //      cout << "total wait time: " << station.yellow.total_wait_time << endl;
 //      cout << "min: " << station.yellow.min_wait_time << ", max: " << station.yellow.max_wait_time << endl;
