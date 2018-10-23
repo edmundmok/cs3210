@@ -73,8 +73,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         if (station.remaining_time == 0) {
           has_valid_msg = true;
           front_train = station.station_use_queue.front().first;
-//          front_train.line = station.station_use_queue.front().first.line;
-//          front_train.train_num = station.station_use_queue.front().first.train_num;
           serialized_train[0] = front_train.line;
           serialized_train[1] = front_train.train_num;
           int prev_track = station.station_use_queue.front().second;
@@ -554,59 +552,6 @@ int main(int argc, char* argv[]) {
         ));
       }
     }
-
-
-//    /* *
-//     * DEBUG!
-//     *
-//     * */
-//
-//    cout << "lines:" << endl;
-//    cout << "green: ";
-//    print_vector(green_line);
-//    cout << "yellow: ";
-//    print_vector(yellow_line);
-//    cout << "blue: ";
-//    print_vector(blue_line);
-//
-//    cout << "link matrix:" << endl;
-//    for (int i=0; i<S; i++) {
-//      for (int j=0; j<S; j++) {
-//        cout << link_rank[i][j] << " ";
-//      }
-//      cout << endl;
-//    }
-//
-//    // print pairings for lines
-//    // green line pairings
-//    cout << "green: " << endl;
-//    for (auto& pairing_list : green_line_pairings) {
-//      cout << pairing_list.first << ":";
-//      for (auto& pairs : pairing_list.second) {
-//        cout << " (" << pairs.first << ", " << pairs.second << ")";
-//      }
-//      cout << endl;
-//    }
-//
-//    // yellow line pairings
-//    cout << "yellow: " << endl;
-//    for (auto& pairing_list : yellow_line_pairings) {
-//      cout << pairing_list.first << ":";
-//      for (auto& pairs : pairing_list.second) {
-//        cout << " (" << pairs.first << ", " << pairs.second << ")";
-//      }
-//      cout << endl;
-//    }
-//
-//    // blue line pairings
-//    cout << "blue: " << endl;
-//    for (auto& pairing_list : blue_line_pairings) {
-//      cout << pairing_list.first << ":";
-//      for (auto& pairs : pairing_list.second) {
-//        cout << " (" << pairs.first << ", " << pairs.second << ")";
-//      }
-//      cout << endl;
-//    }
 
     // Allocate stations to remaining processes
     for (int i=0; i<S; i++) {
