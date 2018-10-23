@@ -2,9 +2,9 @@
 #include <mpi.h>
 #include <assert.h>
 
-#include "read_utils.h"
-#include "print_utils.h"
-#include "network.h"
+#include "read_utils2.h"
+#include "print_utils2.h"
+#include "network2.h"
 
 #define INPUT_FILE_NAME "in.txt"
 #define GREEN 'g'

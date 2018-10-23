@@ -7,8 +7,8 @@
 #include <sstream>
 #include <vector>
 
-#include "network.h"
-#include "helpers.h"
+#include "network2.h"
+#include "helpers2.h"
 
 using namespace std;
 
