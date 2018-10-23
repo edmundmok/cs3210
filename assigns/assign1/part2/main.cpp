@@ -13,6 +13,11 @@
 #define DUMMY_TRAIN 0
 #define REAL_TRAIN 1
 
+void serialize_train(Train& train, int serialized_arr[]) {
+  serialized_arr[0] = train.line;
+  serialized_arr[1] = train.train_num;
+}
+
 void simulate(int N, int S, int my_id, int master, int total_trains,
               Track& track, Station& station, TrainCounts& train_counts) {
   MPI_Status status;
@@ -23,8 +28,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
       // station: send state of trains
       for (auto& pair: station.station_use_queue) {
         Train& train = pair.first;
-        serialized_train[0] = train.line;
-        serialized_train[1] = train.train_num;
+        serialize_train(train, serialized_train);
         serialized_train[2] = my_id;
         MPI_Send(&serialized_train, 4, MPI_INT, master, 3, MPI_COMM_WORLD);
       }
@@ -32,8 +36,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     } else if (my_id < master) {
       // track: send state of trains
       for (Train& train: track.track_use_queue) {
-        serialized_train[0] = train.line;
-        serialized_train[1] = train.train_num;
+        serialize_train(train, serialized_train);
         serialized_train[2] = track.source;
         serialized_train[3] = track.dest;
         MPI_Send(&serialized_train, 4, MPI_INT, master,
@@ -73,8 +76,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         if (station.remaining_time == 0) {
           has_valid_msg = true;
           front_train = station.station_use_queue.front().first;
-          serialized_train[0] = front_train.line;
-          serialized_train[1] = front_train.train_num;
+          serialize_train(front_train, serialized_train);
           int prev_track = station.station_use_queue.front().second;
 
           if (serialized_train[0] == GREEN) {
@@ -225,8 +227,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
         track.remaining_time--;
         if (track.remaining_time == 0) {
           has_valid_msg = true;
-          serialized_train[0] = track.track_use_queue.front().line;
-          serialized_train[1] = track.track_use_queue.front().train_num;
+          serialize_train(track.track_use_queue.front(), serialized_train);
           track.track_use_queue.pop_front();
         }
       }
