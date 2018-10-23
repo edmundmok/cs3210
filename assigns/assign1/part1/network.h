@@ -53,18 +53,18 @@ struct TrainCounts {
 };
 
 struct StationUsage {
-  int last_use_time = -1;
+    int last_use_time = -1;
   queue<int> load_queue;
 };
 
 struct StationUse {
 
-  StationUsage forward;
-  StationUsage backward;
+  StationUsage usage;
 
   StationUsage& get_usage(TrainDirection& direction) {
-    return (direction == FORWARD) ? forward : backward;
+    return usage;
   }
+
 };
 
 struct TrackUse {
@@ -88,14 +88,13 @@ struct Station {
   int station_num;
   string& station_name;
 
-  StationStats forward;
-  StationStats backward;
+  StationStats stats;
 
   Station(int station_num, string& station_name) :
     station_num(station_num), station_name(station_name) {}
 
   StationStats& get_stats(TrainDirection direction) {
-    return (direction == FORWARD) ? forward : backward;
+    return stats;
   }
 };
 
@@ -146,8 +145,7 @@ public:
   }
 
   string get_station_lock_name() {
-    return STATION_LOCK_PREFIX + to_string(direction)
-           + to_string(get_global_station_num());
+    return STATION_LOCK_PREFIX + to_string(get_global_station_num());
   }
 
   string get_track_lock_name() {

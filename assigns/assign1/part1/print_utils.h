@@ -99,28 +99,28 @@ void print_station_header(string& line_name) {
        << endl;
 }
 
-void print_station_timings(Station& station) {
-  cout << station.station_num
-       << " | "
-       << station.station_name
-       << " | "
-       << station.forward.num_waits
-       << " | "
-       << station.forward.total_wait_time
-       << " | "
-       << station.forward.min_wait_time
-       << " | "
-       << station.forward.max_wait_time
-       << " | "
-       << station.backward.num_waits
-       << " | "
-       << station.backward.total_wait_time
-       << " | "
-       << station.backward.min_wait_time
-       << " | "
-       << station.backward.max_wait_time
-       << endl;
-}
+//void print_station_timings(Station& station) {
+//  cout << station.station_num
+//       << " | "
+//       << station.station_name
+//       << " | "
+//       << station.forward.num_waits
+//       << " | "
+//       << station.forward.total_wait_time
+//       << " | "
+//       << station.forward.min_wait_time
+//       << " | "
+//       << station.forward.max_wait_time
+//       << " | "
+//       << station.backward.num_waits
+//       << " | "
+//       << station.backward.total_wait_time
+//       << " | "
+//       << station.backward.min_wait_time
+//       << " | "
+//       << station.backward.max_wait_time
+//       << endl;
+//}
 
 void print_stations_timings(Stations& line, string line_name, int num_trains) {
   bool has_insufficient_data = false;
@@ -134,42 +134,28 @@ void print_stations_timings(Stations& line, string line_name, int num_trains) {
   for (Station& station: line) {
 //    print_station_timings(station);
 
-    if (station.forward.num_waits < 1 or station.backward.num_waits < 1)
+    if (station.stats.num_waits < 1 or station.stats.num_waits < 1)
       has_insufficient_data = true;
-    if (station.forward.num_waits >= 1 or station.backward.num_waits >= 1)
+    if (station.stats.num_waits >= 1 or station.stats.num_waits >= 1)
       has_valid_wait_time = true;
 
     // Settle forward
-    if (station.forward.num_waits > 0) {
-      num_waits += station.forward.num_waits;
-      total_wt += station.forward.total_wait_time;
+    if (station.stats.num_waits > 0) {
+      num_waits += station.stats.num_waits;
+      total_wt += station.stats.total_wait_time;
     }
 
-    if (station.forward.max_wait_time != NINF) {
+    if (station.stats.max_wait_time != NINF) {
       num_maxs++;
-      total_maxs += station.forward.max_wait_time;
+      total_maxs += station.stats.max_wait_time;
     }
 
-    if (station.forward.min_wait_time != INF) {
+    if (station.stats.min_wait_time != INF) {
       num_mins++;
-      total_mins += station.forward.min_wait_time;
+      total_mins += station.stats.min_wait_time;
     }
 
-    // Settle backward
-    if (station.backward.num_waits > 0) {
-      num_waits += station.backward.num_waits;
-      total_wt += station.backward.total_wait_time;
-    }
 
-    if (station.backward.max_wait_time != NINF) {
-      num_maxs++;
-      total_maxs += station.backward.max_wait_time;
-    }
-
-    if (station.backward.min_wait_time != INF) {
-      num_mins++;
-      total_mins += station.backward.min_wait_time;
-    }
   }
   float avg_wait = total_wt / float(num_waits);
   float avg_max = total_maxs / float(num_maxs);

@@ -221,8 +221,21 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
 
     } else if (my_id < master) {
       // track
+      bool received_train = false;
+      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG,
+               MPI_COMM_WORLD, &status);
+
+      if (status.MPI_TAG == REAL_TRAIN) {
+        received_train = true;
+        Train train(serialized_train[0], serialized_train[1]);
+        track.track_use_queue.push_back(train);
+      }
+
       bool has_valid_msg = false;
-      if (not track.track_use_queue.empty()) {
+      if (not track.track_use_queue.empty() and
+        (not received_train
+         or (received_train and serialized_train[0] != track.track_use_queue.front().line
+             and serialized_train[1] != track.track_use_queue.front().train_num))) {
         assert(track.remaining_time > 0);
         track.remaining_time--;
         if (track.remaining_time == 0) {
@@ -234,14 +247,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
 
       MPI_Send(&serialized_train, 2, MPI_INT, track.dest,
                (has_valid_msg) ? REAL_TRAIN : DUMMY_TRAIN, MPI_COMM_WORLD);
-
-      MPI_Recv(&serialized_train, 2, MPI_INT, track.source, MPI_ANY_TAG,
-               MPI_COMM_WORLD, &status);
-
-      if (status.MPI_TAG == REAL_TRAIN) {
-        Train train(serialized_train[0], serialized_train[1]);
-        track.track_use_queue.push_back(train);
-      }
 
       if (track.remaining_time == 0 and not track.track_use_queue.empty()) {
         track.remaining_time = track.dist;
