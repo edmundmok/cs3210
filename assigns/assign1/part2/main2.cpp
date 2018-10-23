@@ -378,7 +378,7 @@ int main(int argc, char* argv[]) {
   if (num_procs != correct_num_procs) {
     if (my_id == master) {
       printf("Incorrect number of processes used, should be %d for the given input. "
-               "Use num links (count shared as 1) + num stations + 1 (master). "
+               "Use unidirectional num links (count shared as 1) + num stations + 1 (master). "
                "Terminating.\n", correct_num_procs);
     }
     MPI_Finalize();

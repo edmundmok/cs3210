@@ -1,1 +1,4 @@
-Compile: mpic++ -std=c++11 main.cpp -O3 -o main
+Compile: mpic++ -std=c++11 main2.cpp -O3 -o main2
+
+testcase1.in: 1000 time ticks; 10-10-10 trains
+
