@@ -1,5 +1,9 @@
+NOTE part 2 only reads from in.txt. Implemented this way to enforce number of processes to number of links.
+
 Compile p1:  g++ -std=c++11 main.cpp -fopenmp -O3 -o main
 Compile p2: mpic++ -std=c++11 main2.cpp -O3 -o main2
 
 testcase1.in: 1000 time ticks; 10-10-10 trains
+
+time mpirun -np 25 -machinefile machinefile.1 -rankfile rankfile17procs.4 ./main2
 
