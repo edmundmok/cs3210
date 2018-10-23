@@ -306,14 +306,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
   } else if (my_id < S) {
 
     // Send blue
-
-//    if (station.blue.num_waits > 0) {
-//      cout << "Station " << my_id << "Blue stats: " << endl;
-//      cout << "num waits: " << station.blue.num_waits << endl;
-//      cout << "wait time: " << station.blue.total_wait_time << endl;
-//      cout << "min: " << station.blue.min_wait_time << ", max: " << station.blue.max_wait_time << endl;
-//    }
-
     serialized_station_stat[0] = station.blue.last_door_close;
     serialized_station_stat[1] = station.blue.num_waits;
     serialized_station_stat[2] = station.blue.total_wait_time;
@@ -322,16 +314,7 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
 
     MPI_Send(&serialized_station_stat, 5, MPI_INT, master, 0, MPI_COMM_WORLD);
 
-//    if (station.green.num_waits > 0) {
-//      cout << "Station " << my_id << "Green stats: " << endl;
-//      cout << "num waits: " << station.green.num_waits << endl;
-//      cout << "time: " << station.green.total_wait_time << endl;
-//      cout << "min: " << station.green.min_wait_time << ", max: " << station.green.max_wait_time << endl;
-//    }
-
-
     // Send green
-
     serialized_station_stat[0] = station.green.last_door_close;
     serialized_station_stat[1] = station.green.num_waits;
     serialized_station_stat[2] = station.green.total_wait_time;
@@ -341,14 +324,6 @@ void simulate(int N, int S, int my_id, int master, int total_trains,
     MPI_Send(&serialized_station_stat, 5, MPI_INT, master, 0, MPI_COMM_WORLD);
 
     // Send yellow
-
-//    if (station.yellow.num_waits > 0) {
-//      cout << "Station " << my_id << "Yellow stats: " << endl;
-//      cout << "num waits: " << station.yellow.num_waits << endl;
-//      cout << "total wait time: " << station.yellow.total_wait_time << endl;
-//      cout << "min: " << station.yellow.min_wait_time << ", max: " << station.yellow.max_wait_time << endl;
-//    }
-
     serialized_station_stat[0] = station.yellow.last_door_close;
     serialized_station_stat[1] = station.yellow.num_waits;
     serialized_station_stat[2] = station.yellow.total_wait_time;
