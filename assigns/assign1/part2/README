@@ -1,9 +1,12 @@
-NOTE part 2 only reads from in.txt. Implemented this way to enforce number of processes to number of links.
+This submission should contain both part 1 and part 2 code.
+
+NOTE part 1 (main.cpp) reads from stdin, so use input redirection when running.
+NOTE part 2 (main2.cpp) only reads from in.txt.
+Implemented this way to enforce number of processes to number of links.
 
 Compile p1:  g++ -std=c++11 main.cpp -fopenmp -O3 -o main
+Run p1: ./main < testcase1.in
+
 Compile p2: mpic++ -std=c++11 main2.cpp -O3 -o main2
-
-testcase1.in: 1000 time ticks; 10-10-10 trains
-
-time mpirun -np 25 -machinefile machinefile.1 -rankfile rankfile17procs.4 ./main2
+Run p2: mpirun -np 25 ./main2
 

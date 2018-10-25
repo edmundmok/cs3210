@@ -1,0 +1,32 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+  \PYG{c+cp}{\PYGZsh{}pragma omp parallel num\PYGZus{}threads(train\PYGZus{}counts.num\PYGZus{}total + 1)}
+  \PYG{p}{\PYGZob{}}
+    \PYG{c+c1}{// master will occupy thread\PYGZus{}id = 0, so offset all workers by 1}
+    \PYG{k+kt}{int} \PYG{n}{thread\PYGZus{}id} \PYG{o}{=} \PYG{n}{omp\PYGZus{}get\PYGZus{}thread\PYGZus{}num}\PYG{p}{();}
+    \PYG{k+kt}{int} \PYG{n}{train\PYGZus{}id} \PYG{o}{=} \PYG{n}{thread\PYGZus{}id}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{;}
+
+    \PYG{c+c1}{// Run for max\PYGZus{}tick number of times}
+    \PYG{k}{for} \PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{tick}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{;} \PYG{n}{tick}\PYG{o}{\PYGZlt{}}\PYG{n}{max\PYGZus{}tick}\PYG{p}{;} \PYG{n}{tick}\PYG{o}{++}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+
+      \PYG{c+c1}{// First let master print out the current state of the system}
+      \PYG{c+cp}{\PYGZsh{}pragma omp master}
+      \PYG{p}{\PYGZob{}}
+        \PYG{n}{print\PYGZus{}system\PYGZus{}state}\PYG{p}{(}\PYG{n}{trains}\PYG{p}{,} \PYG{n}{tick}\PYG{p}{);}
+      \PYG{p}{\PYGZcb{}}
+
+      \PYG{c+c1}{// Let master finish printing before all trains make their moves}
+      \PYG{c+cp}{\PYGZsh{}pragma omp barrier}
+
+      \PYG{c+c1}{// All trains make their move for this tick}
+      \PYG{c+c1}{// (except master thread who does not own a train)}
+      \PYG{k}{if} \PYG{p}{(}\PYG{n}{thread\PYGZus{}id} \PYG{o}{!=} \PYG{n}{MASTER\PYGZus{}THREAD}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+        \PYG{n}{Train}\PYG{o}{\PYGZam{}} \PYG{n}{train} \PYG{o}{=} \PYG{n}{trains}\PYG{p}{[}\PYG{n}{train\PYGZus{}id}\PYG{p}{];}
+        \PYG{n}{assert}\PYG{p}{(}\PYG{n}{train}\PYG{p}{.}\PYG{n}{gnum} \PYG{o}{==} \PYG{n}{train\PYGZus{}id}\PYG{p}{);}
+        \PYG{n}{simulate\PYGZus{}train}\PYG{p}{(}\PYG{n}{train}\PYG{p}{,} \PYG{n}{tick}\PYG{p}{);}
+      \PYG{p}{\PYGZcb{}}
+
+      \PYG{c+c1}{// Let all trains wait for master to print their state}
+      \PYG{c+cp}{\PYGZsh{}pragma omp barrier}
+    \PYG{p}{\PYGZcb{}}
+  \PYG{p}{\PYGZcb{}}
+\end{Verbatim}
