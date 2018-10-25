@@ -9,4 +9,9 @@ Run p1: ./main < testcase1.in
 
 Compile p2: mpic++ -std=c++11 main2.cpp -O3 -o main2
 Run p2: mpirun -np 25 ./main2
+Remember to make sure in.txt exists in the current directory.
+
+Provided test cases are testcase1.in, testcase2.in and testcase3.in.
+Outputs for p1 are p1testcase1.out, p1testcase2.out, p1testcase3.out.
+Outputs for p2 are p2testcase1.out, p2testcase2.out, p2testcase3.out.
 
