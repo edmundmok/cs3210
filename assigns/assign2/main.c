@@ -8,7 +8,8 @@
 #define NUM_BITS 256
 //#define NUSNET_ID "E0002744"
 #define NUSNET_ID "E1234567"
-#define TEST_NONCE "16617441498601881600"
+//#define TEST_NONCE "16617441498601881600"
+#define TEST_NONCE_HEX "e69d030000000000"
 
 int main() {
 
@@ -26,20 +27,18 @@ int main() {
   char mini_prev_digest[3];
   for (int i=0; i<64; i+=2) {
     strncpy(mini_prev_digest, prev_digest_hex_str+i, 2);
-    printf("%s\n", mini_prev_digest);
+//    printf("%s\n", mini_prev_digest);
     prev_digest[i/2] = (uint8_t) strtol(mini_prev_digest, NULL, 16);
   }
 
   // The actual hash input can be of variable length.
-  uint8_t input[53];
+  uint8_t input[52];
   memset(input, sizeof(input), 0);
 
   uint32_t timestamp = htonl(0x5bb16380);
-  uint8_t hash[32];
-//  uint8_t nonce = ;
 
   // Fill in the input
-  // 1. Fill in timestamp (starting from LSB)
+  // 1. Fill in timestamp (starting from LSB back up)
   for (int i=3; i>=0; i--) {
     input[i] = timestamp & 0xff;
     timestamp >>= 8;
@@ -52,16 +51,25 @@ int main() {
 
   // 3. Fill in NUSNET ID
   for (int i=0; i<8; i++) {
-//    input[i+36] = (uint8_t) NUSNET_ID[i];
+    input[i+36] = (uint8_t) NUSNET_ID[i];
   }
 
   // 4. Fill in nonce
-
+  char mini_nounce[3];
+  for (int i=0; i<16; i+=2) {
+    strncpy(mini_nounce, TEST_NONCE_HEX, 2);
+    input[i/2+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
+  }
 
   // Hash the input
-//  hash
+  uint8_t hash[32];
+  sha256(hash, input, 416);
 
   // Verify the result
+  printf("The first 8 bytes of the digest are: \n");
+  for (int i=0; i<8; i++) {
+    printf("%d\n", hash[i]);
+  }
 
 
   return 0;
