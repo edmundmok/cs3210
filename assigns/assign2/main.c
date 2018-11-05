@@ -19,10 +19,11 @@ int main() {
   memset(target, sizeof(target), 0);
 
   // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
-  char *prev_digest_hex_str = "3210327c68bb9409c4aa5806a4c018e26dcd2ca599a5cbccfaf09c886f701b71";
-//  char prev_digest_hex_str[65], target_dec_str[65];
-//  scanf("%s", prev_digest_hex_str);
-//  scanf("%s", target_dec_str);
+  char prev_digest_hex_str[65], target_dec_str[65];
+  printf("Enter previous digest (256-bits hex):\n");
+  scanf("%s", prev_digest_hex_str);
+  printf("Enter target value (decimal):\n");
+  scanf("%s", target_dec_str);
 
   // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
@@ -74,8 +75,7 @@ int main() {
   // Verify the result
   printf("The first 8 bytes of the digest are: \n");
   for (int i=0; i<8; i++) {
-//    printf("%d\n%d\n", (hash[i] >> 4) & 0xf, hash[i] & 0xf);
-    printf("%04x\n", hash[i]);
+    printf("%02x\n", hash[i]);
   }
 
 
