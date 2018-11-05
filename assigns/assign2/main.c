@@ -2,10 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <arpa/inet.h>
 #include "nhash.h"
 
-#define NUM_BITS 256
 //#define NUSNET_ID "E0002744"
 #define NUSNET_ID "E1234567"
 //#define TEST_NONCE "16617441498601881600"
@@ -20,16 +18,16 @@ int main() {
 
   // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
   char prev_digest_hex_str[65], target_dec_str[65];
-  printf("Enter previous digest (256-bits hex):\n");
+  printf("Enter previous digest (256-bit hex):\n");
   scanf("%s", prev_digest_hex_str);
-  printf("Enter target value (decimal):\n");
+  printf("Enter target value (64-bit decimal):\n");
   scanf("%s", target_dec_str);
 
   // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
   for (int i=0; i<64; i+=2) {
     strncpy(mini_prev_digest, prev_digest_hex_str+i, 2);
-    prev_digest[i/2] = (uint8_t) strtol(mini_prev_digest, NULL, 16);
+    prev_digest[i>>1] = (uint8_t) strtol(mini_prev_digest, NULL, 16);
   }
 
   // The actual hash input can be of variable length.
@@ -49,7 +47,6 @@ int main() {
   // 2. Fill in the previous digest
   for (int i=0; i<32; i++) {
     input[i+4] = prev_digest[i];
-    printf("%d: %04x\n", i+4, input[i+4]);
   }
 
   // 3. Fill in NUSNET ID
@@ -61,12 +58,8 @@ int main() {
   char mini_nounce[3];
   for (int i=0; i<16; i+=2) {
     strncpy(mini_nounce, TEST_NONCE_HEX+i, 2);
-    input[(i/2)+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
+    input[(i>>1)+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
   }
-
-  // Print input
-  for (int i=0; i<52; i++) printf("%d", input[i]);
-  printf("\n");
 
   // Hash the input
   uint8_t hash[32];
@@ -75,9 +68,9 @@ int main() {
   // Verify the result
   printf("The first 8 bytes of the digest are: \n");
   for (int i=0; i<8; i++) {
-    printf("%02x\n", hash[i]);
+    printf("%02x", hash[i]);
   }
-
+  printf("\n");
 
   return 0;
 }
