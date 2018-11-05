@@ -19,7 +19,8 @@ int main() {
   memset(target, sizeof(target), 0);
 
   // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
-  char prev_digest_hex_str[65], target_dec_str[65];
+  char *prev_digest_hex_str = "3210327c68bb9409c4aa5806a4c018e26dcd2ca599a5cbccfaf09c886f701b71";
+//  char prev_digest_hex_str[65], target_dec_str[65];
 //  scanf("%s", prev_digest_hex_str);
 //  scanf("%s", target_dec_str);
 
@@ -34,20 +35,20 @@ int main() {
   uint8_t input[52];
   memset(input, sizeof(input), 0);
 
-  uint32_t timestamp = htonl(0x5bb16380);
-  printf("Timestamp: %d\n", 0x5bb16380);
-  printf("Timestamp: %d\n", htonl(0x5bb16380));
+    uint32_t timestamp = 0x5bb16380;
 
   // Fill in the input
   // 1. Fill in timestamp (starting from LSB back up)
   for (int i=3; i>=0; i--) {
     input[i] = timestamp & 0xff;
+//    printf("%d: %04x\n", i, input[i]);
     timestamp >>= 8;
   }
 
   // 2. Fill in the previous digest
   for (int i=0; i<32; i++) {
     input[i+4] = prev_digest[i];
+    printf("%d: %04x\n", i+4, input[i+4]);
   }
 
   // 3. Fill in NUSNET ID
@@ -58,7 +59,7 @@ int main() {
   // 4. Fill in nonce
   char mini_nounce[3];
   for (int i=0; i<16; i+=2) {
-    strncpy(mini_nounce, TEST_NONCE_HEX, 2);
+    strncpy(mini_nounce, TEST_NONCE_HEX+i, 2);
     input[(i/2)+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
   }
 
@@ -73,8 +74,8 @@ int main() {
   // Verify the result
   printf("The first 8 bytes of the digest are: \n");
   for (int i=0; i<8; i++) {
-    printf("%d\n%d\n", (hash[i] >> 4) & 0xf, hash[i] & 0xf);
-//    printf("%04x\n", hash[i]);
+//    printf("%d\n%d\n", (hash[i] >> 4) & 0xf, hash[i] & 0xf);
+    printf("%04x\n", hash[i]);
   }
 
 
