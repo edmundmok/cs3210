@@ -20,14 +20,13 @@ int main() {
 
   // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
   char prev_digest_hex_str[65], target_dec_str[65];
-  scanf("%s", prev_digest_hex_str);
-  scanf("%s", target_dec_str);
+//  scanf("%s", prev_digest_hex_str);
+//  scanf("%s", target_dec_str);
 
   // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
   for (int i=0; i<64; i+=2) {
     strncpy(mini_prev_digest, prev_digest_hex_str+i, 2);
-//    printf("%s\n", mini_prev_digest);
     prev_digest[i/2] = (uint8_t) strtol(mini_prev_digest, NULL, 16);
   }
 
@@ -36,6 +35,8 @@ int main() {
   memset(input, sizeof(input), 0);
 
   uint32_t timestamp = htonl(0x5bb16380);
+  printf("Timestamp: %d\n", 0x5bb16380);
+  printf("Timestamp: %d\n", htonl(0x5bb16380));
 
   // Fill in the input
   // 1. Fill in timestamp (starting from LSB back up)
@@ -58,17 +59,22 @@ int main() {
   char mini_nounce[3];
   for (int i=0; i<16; i+=2) {
     strncpy(mini_nounce, TEST_NONCE_HEX, 2);
-    input[i/2+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
+    input[(i/2)+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
   }
+
+  // Print input
+  for (int i=0; i<52; i++) printf("%d", input[i]);
+  printf("\n");
 
   // Hash the input
   uint8_t hash[32];
-  sha256(hash, input, 416);
+  sha256(hash, input, 52);
 
   // Verify the result
   printf("The first 8 bytes of the digest are: \n");
   for (int i=0; i<8; i++) {
-    printf("%d\n", hash[i]);
+    printf("%d\n%d\n", (hash[i] >> 4) & 0xf, hash[i] & 0xf);
+//    printf("%04x\n", hash[i]);
   }
 
 
