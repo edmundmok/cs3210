@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <endian.h>
 
 #define NUSNET_ID "E1234567"
 #define NONCE_IDX 44
@@ -23,7 +22,7 @@ bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
   return hash_prefix < target;
 }
 
-void read_inputs(char prev_digest_hex_str[], int *target) {
+void read_inputs(char prev_digest_hex_str[], uint64_t *target) {
   printf("Enter previous digest (256-bit hex):\n");
   scanf("%s", prev_digest_hex_str);
   printf("Enter target value (64-bit decimal):\n");
@@ -50,9 +49,11 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
    *  ---------------------------------------------------
    */
 
-  // 1. Fill in timestamp
-  uint32_t *timestamp_ptr = input;
-  *timestamp_ptr = htobe32(timestamp);
+  // 1. Fill in timestamp (this part is little endian for some reason)
+  for (int i=3; i>=0; i--) {
+    input[i] = timestamp & 0xff;
+    timestamp >>= 8;
+  }
 
   // Digest is 256 bits.
   uint8_t prev_digest[32];
@@ -71,8 +72,10 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
 }
 
 void fill_input_with_nonce(uint8_t input[], uint64_t nonce) {
-  uint64_t *nonce_ptr = input + NONCE_IDX;
-  *nonce_ptr = htobe64(nonce);
+  for (int i=51; i>=NONCE_IDX; i--) {
+    input[i] = nonce & 0xff;
+    nonce >>= 8;
+  }
 }
 
 void print_final_output(uint32_t timestamp, uint64_t nonce, uint8_t hash[]) {
