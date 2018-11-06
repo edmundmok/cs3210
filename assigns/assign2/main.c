@@ -12,13 +12,10 @@ int main() {
 
   freopen("./test.in", "r", stdin);
 
-  // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
+  // 1 hex digit is 4 bits
   char prev_digest_hex_str[65];
   uint64_t target;
-  printf("Enter previous digest (256-bit hex):\n");
-  scanf("%s", prev_digest_hex_str);
-  printf("Enter target value (64-bit decimal):\n");
-  scanf("%llu", &target);
+  read_inputs(prev_digest_hex_str, &target);
 
   // Digest is 256 bits.
   uint8_t prev_digest[32];

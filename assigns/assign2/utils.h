@@ -21,4 +21,11 @@ void print_hash_against_target_check(uint8_t hash[], uint64_t target) {
   printf("Valid nonce: %s\n", (is_valid) ? "Yes" : "No");
 }
 
+void read_inputs(char prev_digest_hex_str[], int *target) {
+  printf("Enter previous digest (256-bit hex):\n");
+  scanf("%s", prev_digest_hex_str);
+  printf("Enter target value (64-bit decimal):\n");
+  scanf("%llu", &target);
+}
+
 #endif //ASSIGN2_UTILS_H
