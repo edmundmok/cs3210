@@ -8,10 +8,10 @@
 
 //#define NUSNET_ID "E0002744"
 #define NUSNET_ID "E1234567"
-//#define TEST_NONCE "16617441498601881600"
-#define TEST_NONCE_HEX "e69d030000000000"
 
 int main() {
+
+  freopen("./test.in", "r", stdin);
 
   // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
   char prev_digest_hex_str[65];
@@ -27,10 +27,14 @@ int main() {
 
   // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
+//  printf("MPD: ");
   for (int i=0; i<64; i+=2) {
     strncpy(mini_prev_digest, prev_digest_hex_str+i, 2);
+    mini_prev_digest[2] = '\0';
+//    printf("%s", mini_prev_digest);
     prev_digest[i>>1] = (uint8_t) strtol(mini_prev_digest, NULL, 16);
   }
+//  printf("\n");
 
   // The actual hash input can be of variable length.
   uint8_t input[52];
@@ -56,11 +60,20 @@ int main() {
   }
 
   // 4. Fill in nonce
-  char mini_nounce[3];
-  for (int i=0; i<16; i+=2) {
-    strncpy(mini_nounce, TEST_NONCE_HEX+i, 2);
-    input[(i>>1)+44] = (uint8_t) strtol(mini_nounce, NULL, 16);
+  char minin_nonce[3];
+  uint64_t nonce = 0xe69d030000000000;
+//  printf("%llx\n", nonce);
+//  for (int i=0; i<16; i+=2) {
+//    strncpy(minin_nonce, TEST_NONCE_HEX+i, 2);
+//    input[(i>>1)+44] = (uint8_t) strtol(minin_nonce, NULL, 16);
+//  }
+  uint64_t *nonce_ptr = input+44;
+  *nonce_ptr = htobe64(nonce);
+
+  for (int i=0; i<52; i++) {
+    printf("%02x", input[i]);
   }
+  printf("\n");
 
   // Hash the input
   uint8_t hash[32];

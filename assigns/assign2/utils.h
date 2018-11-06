@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <endian.h>
 
 void print_digest_prefix(uint8_t hash[]) {
   printf("The first 8 bytes of the digest are: \n");
@@ -12,19 +13,11 @@ void print_digest_prefix(uint8_t hash[]) {
   printf("\n");
 }
 
-void print_hash_against_target_check(uint8_t hash[], uint8_t target[]) {
-  bool is_valid = false;
+void print_hash_against_target_check(uint8_t hash[], uint64_t target) {
   // Only check 64 bits (8 bytes).
-  for (int i=0; i<8; i++) {
-    if (target[i] > hash[i]) {
-      is_valid = true;
-      break;
-    } else if (hash[i] > target[i]) {
-      is_valid = false;
-      break;
-    }
-  }
-
+  uint64_t hash_prefix = be64toh(*(uint64_t *) hash);
+//  printf("%llu\n", hash_prefix);
+  bool is_valid = hash_prefix < target;
   printf("Valid nonce: %s\n", (is_valid) ? "Yes" : "No");
 }
 
