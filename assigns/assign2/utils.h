@@ -58,7 +58,6 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
 
   // Digest is 256 bits.
   uint8_t prev_digest[32];
-  // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
   for (int i=0; i<64; i+=2) {
     strncpy(mini_prev_digest, prev_digest_hex_str+i, 2);
@@ -67,15 +66,16 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
   }
 
   // 2. Fill in the previous digest
-  for (int i=0; i<32; i++) {
-    input[i+4] = prev_digest[i];
-  }
+  for (int i=0; i<32; i++) input[i+4] = prev_digest[i];
 
   // 3. Fill in NUSNET ID
-  for (int i=0; i<8; i++) {
-    input[i+36] = (uint8_t) NUSNET_ID[i];
-  }
+  for (int i=0; i<8; i++) input[i+36] = NUSNET_ID[i];
 
+}
+
+void fill_input_with_nonce(uint8_t input[], uint64_t nonce) {
+  uint64_t *nonce_ptr = input + NONCE_IDX;
+  *nonce_ptr = htobe64(nonce);
 }
 
 #endif //ASSIGN2_UTILS_H

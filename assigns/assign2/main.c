@@ -8,7 +8,6 @@ int main() {
 
   freopen("./test.in", "r", stdin);
 
-  // 1 hex digit is 4 bits
   char prev_digest_hex_str[65];
   uint64_t target;
   read_inputs(prev_digest_hex_str, &target);
@@ -17,10 +16,8 @@ int main() {
   uint32_t timestamp = 0x5bb16380;
   generate_partial_hash_input(input, timestamp, prev_digest_hex_str);
 
-  // 4. Fill in nonce
   uint64_t nonce = 0xe69d030000000000;
-  uint64_t *nonce_ptr = input + NONCE_IDX;
-  *nonce_ptr = htobe64(nonce);
+  fill_input_with_nonce(input, nonce);
 
   print_complete_hash_input(input);
 
