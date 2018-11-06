@@ -24,6 +24,7 @@ int main() {
   sha256(hash, input, 52);
 
   // Print final output
+  printf("Target: %llu\n", target);
   print_final_output(timestamp, nonce, hash);
 
   return 0;
