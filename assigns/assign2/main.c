@@ -2,7 +2,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "nhash.h"
+#include "utils.h"
 
 //#define NUSNET_ID "E0002744"
 #define NUSNET_ID "E1234567"
@@ -34,13 +36,12 @@ int main() {
   uint8_t input[52];
   memset(input, sizeof(input), 0);
 
-    uint32_t timestamp = 0x5bb16380;
+  uint32_t timestamp = 0x5bb16380;
 
   // Fill in the input
   // 1. Fill in timestamp (starting from LSB back up)
   for (int i=3; i>=0; i--) {
     input[i] = timestamp & 0xff;
-//    printf("%d: %04x\n", i, input[i]);
     timestamp >>= 8;
   }
 
@@ -66,11 +67,7 @@ int main() {
   sha256(hash, input, 52);
 
   // Verify the result
-  printf("The first 8 bytes of the digest are: \n");
-  for (int i=0; i<8; i++) {
-    printf("%02x", hash[i]);
-  }
-  printf("\n");
+  print_digest_prefix(hash);
 
   return 0;
 }
