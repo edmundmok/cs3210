@@ -65,7 +65,6 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
 
   // 2. Fill in the previous digest
   for (int i=0; i<32; i++) input[i+4] = prev_digest[i];
-
   // 3. Fill in NUSNET ID
   for (int i=0; i<8; i++) input[i+36] = NUSNET_ID[i];
 
