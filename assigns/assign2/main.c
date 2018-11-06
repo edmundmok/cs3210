@@ -13,17 +13,16 @@
 
 int main() {
 
-  // Both digest and target (compared against hash) are 256 bits.
-  uint8_t prev_digest[32], target[32];
-  memset(prev_digest, sizeof(prev_digest), 0);
-  memset(target, sizeof(target), 0);
-
   // 1 hex digit is 4 bits, 2 hex digit is 8 bits (uint8_t)
   char prev_digest_hex_str[65], target_dec_str[65];
   printf("Enter previous digest (256-bit hex):\n");
   scanf("%s", prev_digest_hex_str);
   printf("Enter target value (64-bit decimal):\n");
   scanf("%s", target_dec_str);
+
+  // Digest is 256 bits.
+  uint8_t prev_digest[32];
+  memset(prev_digest, sizeof(prev_digest), 0);
 
   // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
@@ -65,6 +64,9 @@ int main() {
   // Hash the input
   uint8_t hash[32];
   sha256(hash, input, 52);
+
+  // Fill in the target arr (64 bits)
+  uint64_t target = strtol(target_dec_str, NULL, 10);
 
   // Verify the result
   print_digest_prefix(hash);

@@ -14,11 +14,12 @@ void print_digest_prefix(uint8_t hash[]) {
 
 void print_hash_against_target_check(uint8_t hash[], uint8_t target[]) {
   bool is_valid = false;
-  for (int i=0; i<32; i++) {
-    if (target > hash) {
+  // Only check 64 bits (8 bytes).
+  for (int i=0; i<8; i++) {
+    if (target[i] > hash[i]) {
       is_valid = true;
       break;
-    } else if (hash > target) {
+    } else if (hash[i] > target[i]) {
       is_valid = false;
       break;
     }
