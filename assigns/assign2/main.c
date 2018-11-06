@@ -70,18 +70,7 @@ int main() {
   print_digest_prefix(hash);
 
   // Compare against target
-  bool is_valid = false;
-  for (int i=0; i<32; i++) {
-    if (target > hash) {
-      is_valid = true;
-      break;
-    } else if (hash > target) {
-      is_valid = false;
-      break;
-    }
-  }
-
-  printf("Valid nonce: %s\n", (is_valid) ? "Yes" : "No");
+  print_hash_against_target_check(hash, target);
 
   return 0;
 }
