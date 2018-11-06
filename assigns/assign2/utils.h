@@ -18,7 +18,9 @@ void print_digest_prefix(uint8_t hash[]) {
 
 bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
   // Only check 64 bits (8 bytes).
+  // Hash output from SHA256 is in big endian.
   uint64_t hash_prefix = be64toh(*(uint64_t *) hash);
+  printf("Hash Prefix: %llu, Target: %llu\n", hash_prefix, target);
   return hash_prefix < target;
 }
 
@@ -82,9 +84,7 @@ void print_final_output(uint32_t timestamp, uint64_t nonce, uint8_t hash[]) {
   printf("%s\n", NUSNET_ID);
   printf("%u\n", timestamp);
   printf("%llu\n", nonce);
-  for (int i=0; i<32; i++) {
-    printf("%02x", hash[i]);
-  }
+  for (int i=0; i<32; i++) printf("%02x", hash[i]);
   printf("\n");
 }
 

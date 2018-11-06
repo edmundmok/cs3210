@@ -23,6 +23,8 @@ int main() {
   uint8_t hash[32];
   sha256(hash, input, 52);
 
+  printf("VALID NONCE: %s\n", (check_if_valid_nonce(hash, target)) ? "YES" : "NO");
+
   // Print final output
   printf("Target: %llu\n", target);
   print_final_output(timestamp, nonce, hash);
