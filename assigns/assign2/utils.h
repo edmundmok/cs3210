@@ -10,19 +10,17 @@
 #define NONCE_IDX 44
 
 void print_digest_prefix(uint8_t hash[]) {
-  printf("The first 8 bytes of the digest are: \n");
+  printf("The first 8 bytes of the digest are: ");
   for (int i=0; i<8; i++) {
     printf("%02x", hash[i]);
   }
   printf("\n");
 }
 
-void print_hash_against_target_check(uint8_t hash[], uint64_t target) {
+bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
   // Only check 64 bits (8 bytes).
   uint64_t hash_prefix = be64toh(*(uint64_t *) hash);
-//  printf("%llu\n", hash_prefix);
-  bool is_valid = hash_prefix < target;
-  printf("Valid nonce: %s\n", (is_valid) ? "Yes" : "No");
+  return hash_prefix < target;
 }
 
 void read_inputs(char prev_digest_hex_str[], int *target) {
@@ -76,6 +74,16 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
 void fill_input_with_nonce(uint8_t input[], uint64_t nonce) {
   uint64_t *nonce_ptr = input + NONCE_IDX;
   *nonce_ptr = htobe64(nonce);
+}
+
+void print_final_output(uint32_t timestamp, uint64_t nonce, uint8_t hash[]) {
+  printf("%s\n", NUSNET_ID);
+  printf("%u\n", timestamp);
+  printf("%llu\n", nonce);
+  for (int i=0; i<32; i++) {
+    printf("%02x", hash[i]);
+  }
+  printf("\n");
 }
 
 #endif //ASSIGN2_UTILS_H

@@ -19,17 +19,12 @@ int main() {
   uint64_t nonce = 0xe69d030000000000;
   fill_input_with_nonce(input, nonce);
 
-  print_complete_hash_input(input);
-
   // Hash the input
   uint8_t hash[32];
   sha256(hash, input, 52);
 
-  // Verify the result
-  print_digest_prefix(hash);
-
-  // Compare against target
-  print_hash_against_target_check(hash, target);
+  // Print final output
+  print_final_output(timestamp, nonce, hash);
 
   return 0;
 }
