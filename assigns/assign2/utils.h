@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <endian.h>
 
 #define NUSNET_ID "E1234567"
@@ -40,16 +41,23 @@ void print_complete_hash_input(uint8_t input[]) {
 
 void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
                                  char prev_digest_hex_str[]) {
-  // Fill in the input
-  // 1. Fill in timestamp (starting from LSB back up)
-  for (int i=3; i>=0; i--) {
-    input[i] = timestamp & 0xff;
-    timestamp >>= 8;
-  }
+
+  /**
+   * uint8_t arr
+   *
+   *  ---------------------------------------------------
+   * | Timestamp | Prev digest hex | NUSNET ID |  Nonce  |
+   * |-----------|-----------------|-----------|---------|
+   * |   0 - 3   |     4 - 35      |  36 - 43  | 44 - 52 |
+   *  ---------------------------------------------------
+   */
+
+  // 1. Fill in timestamp
+  uint32_t *timestamp_ptr = input;
+  *timestamp_ptr = htobe32(timestamp);
 
   // Digest is 256 bits.
   uint8_t prev_digest[32];
-
   // Convert digest str to uint8_t arr
   char mini_prev_digest[3];
   for (int i=0; i<64; i+=2) {

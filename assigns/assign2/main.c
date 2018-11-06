@@ -13,7 +13,6 @@ int main() {
   uint64_t target;
   read_inputs(prev_digest_hex_str, &target);
 
-  // The actual hash input can be of variable length.
   uint8_t input[52];
   uint32_t timestamp = 0x5bb16380;
   generate_partial_hash_input(input, timestamp, prev_digest_hex_str);
