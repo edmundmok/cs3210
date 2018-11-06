@@ -6,6 +6,7 @@
 #include <endian.h>
 
 #define NUSNET_ID "E1234567"
+#define NONCE_IDX 44
 
 void print_digest_prefix(uint8_t hash[]) {
   printf("The first 8 bytes of the digest are: \n");
@@ -37,9 +38,8 @@ void print_complete_hash_input(uint8_t input[]) {
   printf("\n");
 }
 
-void generate_partial_hash_input(uint8_t input[], char prev_digest_hex_str[]) {
-  uint32_t timestamp = 0x5bb16380;
-
+void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
+                                 char prev_digest_hex_str[]) {
   // Fill in the input
   // 1. Fill in timestamp (starting from LSB back up)
   for (int i=3; i>=0; i--) {
