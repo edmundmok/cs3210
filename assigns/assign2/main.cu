@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "utils.h"
 
@@ -207,7 +208,7 @@ int main() {
   read_inputs(prev_digest_hex_str, &target);
 
   uint8_t input[INPUT_SIZE];
-  uint32_t timestamp = 0x5bb16380;
+  time_t timestamp = time(NULL);
   generate_partial_hash_input(input, timestamp, prev_digest_hex_str);
 
   uint8_t *d_input;

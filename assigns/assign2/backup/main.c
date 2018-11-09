@@ -13,10 +13,10 @@ int main() {
   read_inputs(prev_digest_hex_str, &target);
 
   uint8_t input[52];
-  uint32_t timestamp = 0x5bb16380;
+  uint32_t timestamp = 1541764931;
   generate_partial_hash_input(input, timestamp, prev_digest_hex_str);
 
-  uint64_t nonce = 0xe69d030000000000;
+  uint64_t nonce = 27601;
   fill_input_with_nonce(input, nonce);
 
   // Hash the input

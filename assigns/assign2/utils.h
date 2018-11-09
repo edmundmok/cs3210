@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NUSNET_ID "E1234567"
+#define NUSNET_ID "E0002744"
 #define NONCE_IDX 44
 
 void print_digest_prefix(uint8_t hash[]) {
