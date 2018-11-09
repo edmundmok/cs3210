@@ -231,7 +231,7 @@ int main() {
   uint64_t nonce[1] = {0};
   cudaMalloc((void **) &d_nonce, sizeof(nonce));
 
-  find_nonce_kernel<<<1, 1>>>(d_input, d_target, d_found, d_hash, d_nonce);
+  find_nonce_kernel<<<2, 32>>>(d_input, d_target, d_found, d_hash, d_nonce);
 
   // Copy input back
   cudaMemcpy(input, d_input, sizeof(input), cudaMemcpyDeviceToHost);
@@ -263,8 +263,8 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
 
   for (int i=0; i<NONCE_IDX; i++) l_input[i] = g_input[i];
 
-//  size_t total_num_threads = gridDim.x * gridDim.y * gridDim.z
-//                             * blockDim.x * blockDim.y * blockDim.z;
+  size_t total_num_threads = gridDim.x * gridDim.y * gridDim.z
+                             * blockDim.x * blockDim.y * blockDim.z;
 
   size_t block_index_in_grid = blockIdx.x * (gridDim.y * gridDim.z)
                                + blockIdx.y * (gridDim.z) + blockIdx.z;
@@ -275,8 +275,7 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
   size_t thread_id = block_index_in_grid * (blockDim.x * blockDim.y * blockDim.z)
                      + thread_index_in_block;
 
-//  uint64_t nonce = thread_id;
-  uint64_t nonce = 0xe69d030000000000;
+  uint64_t nonce = thread_id;
 
   // Start finding nonce
   while (!*found) {
@@ -297,6 +296,7 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
         *g_nonce = nonce;
       }
     }
+    nonce += total_num_threads;
   }
 
 }
