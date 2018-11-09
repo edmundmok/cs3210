@@ -32,7 +32,7 @@ __device__ bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
   // Hash output from SHA256 is in big endian, but
   // our clusters are little endian.
   uint64_t hash_prefix = endian_swap(*(uint64_t *) hash);
-  printf("Hash Prefix: %llu, Target: %llu\n", hash_prefix, target);
+//  printf("Hash Prefix: %llu, Target: %llu\n", hash_prefix, target);
   return hash_prefix < target;
 }
 
