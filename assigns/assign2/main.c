@@ -237,7 +237,7 @@ int main() {
   cudaMemcpy(input, d_input, sizeof(input), cudaMemcpyDeviceToHost);
 
   // Copy nonce back
-//  cudaMalloc(nonce, d_nonce, sizeof(nonce), cudaMemcpyDeviceToHost);
+  cudaMemcpy(nonce, d_nonce, sizeof(nonce), cudaMemcpyDeviceToHost);
 
   // Copy digest/hash back
   cudaMemcpy(hash, d_hash, sizeof(hash), cudaMemcpyDeviceToHost);
@@ -275,7 +275,8 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
   size_t thread_id = block_index_in_grid * (blockDim.x * blockDim.y * blockDim.z)
                      + thread_index_in_block;
 
-  uint64_t nonce = thread_id;
+//  uint64_t nonce = thread_id;
+  uint64_t nonce = 0xe69d030000000000;
 
   // Start finding nonce
   while (!*found) {
