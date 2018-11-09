@@ -287,7 +287,7 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
     fill_input_with_nonce(l_input, nonce);
     sha256(l_hash, l_input, 52);
 
-    if (*found == 0 && check_if_valid_nonce(l_hash, l_target)) {
+    if (check_if_valid_nonce(l_hash, l_target) && *found == 0) {
       int old = atomicAdd(found, 1);
       if (old == 0) {
         // Only one thread can ever do this
