@@ -231,7 +231,7 @@ int main() {
   uint64_t nonce[1] = {0};
   cudaMalloc((void **) &d_nonce, sizeof(nonce));
 
-  find_nonce_kernel<<<1, 2>>>(d_input, d_target, d_found, d_hash, d_nonce);
+  find_nonce_kernel<<<2, 64>>>(d_input, d_target, d_found, d_hash, d_nonce);
 
   // Copy input back
   cudaMemcpy(input, d_input, sizeof(input), cudaMemcpyDeviceToHost);
