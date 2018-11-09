@@ -258,8 +258,7 @@ __device__ void print_nonce(uint64_t nonce) {
 }
 
 __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
-                                   /*volatile*/ int *found, uint8_t *hash,
-                                   uint64_t *g_nonce) {
+                                  int *found, uint8_t *hash, uint64_t *g_nonce) {
   // Copy from global to local
   uint8_t l_input[52];
   uint8_t l_hash[32];
