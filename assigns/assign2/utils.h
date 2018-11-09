@@ -16,10 +16,22 @@ void print_digest_prefix(uint8_t hash[]) {
   printf("\n");
 }
 
+__device__ inline uint64_t endian_swap(uint64_t x){
+  return (x>>56) |
+      ((x<<40) & 0x00FF000000000000) |
+      ((x<<24) & 0x0000FF0000000000) |
+      ((x<<8)  & 0x000000FF00000000) |
+      ((x>>8)  & 0x00000000FF000000) |
+      ((x>>24) & 0x0000000000FF0000) |
+      ((x>>40) & 0x000000000000FF00) |
+      (x<<56);
+}
+
 __device__ bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
   // Only check 64 bits (8 bytes).
-  // Hash output from SHA256 is in big endian.
-  uint64_t hash_prefix = be64toh(*(uint64_t *) hash);
+  // Hash output from SHA256 is in big endian, but
+  // our clusters are little endian.
+  uint64_t hash_prefix = endian_swap(*(uint64_t *) hash);
   printf("Hash Prefix: %llu, Target: %llu\n", hash_prefix, target);
   return hash_prefix < target;
 }

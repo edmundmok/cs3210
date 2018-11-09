@@ -231,7 +231,7 @@ int main() {
   uint64_t nonce[1] = {0};
   cudaMalloc((void **) &d_nonce, sizeof(nonce));
 
-  find_nonce_kernel<<<2, 32>>>(d_input, d_target, d_found, d_hash, d_nonce);
+  find_nonce_kernel<<<10, 32>>>(d_input, d_target, d_found, d_hash, d_nonce);
 
   // Copy input back
   cudaMemcpy(input, d_input, sizeof(input), cudaMemcpyDeviceToHost);
@@ -276,6 +276,7 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
                      + thread_index_in_block;
 
   uint64_t nonce = thread_id;
+//  uint64_t nonce = 0xe69d030000000000;
 
   // Start finding nonce
   while (!*found) {
@@ -283,6 +284,7 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
     sha256(l_hash, l_input, 52);
 
     if (*found == 0 && check_if_valid_nonce(l_hash, l_target)) {
+      printf("FOUNDED\n");
       int old = atomicAdd(found, 1);
       if (old == 0) {
         // Only one thread can ever do this
