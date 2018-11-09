@@ -16,12 +16,13 @@ void print_digest_prefix(uint8_t hash[]) {
   printf("\n");
 }
 
-bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
+__device__ bool check_if_valid_nonce(uint8_t *hash, uint64_t target) {
   // Only check 64 bits (8 bytes).
   // Hash output from SHA256 is in big endian.
-  uint64_t hash_prefix = be64toh(*(uint64_t *) hash);
-  printf("Hash Prefix: %llu, Target: %llu\n", hash_prefix, target);
-  return hash_prefix < target;
+//  uint64_t hash_prefix = be64toh(*(uint64_t *) hash);
+//  printf("Hash Prefix: %llu, Target: %llu\n", hash_prefix, target);
+//  return hash_prefix < target;
+  return true;
 }
 
 void read_inputs(char prev_digest_hex_str[], uint64_t *target) {
@@ -73,7 +74,7 @@ void generate_partial_hash_input(uint8_t input[], uint32_t timestamp,
 
 }
 
-void fill_input_with_nonce(uint8_t input[], uint64_t nonce) {
+__device__ void fill_input_with_nonce(uint8_t input[], uint64_t nonce) {
   for (int i=51; i>=NONCE_IDX; i--) {
     input[i] = nonce & 0xff;
     nonce >>= 8;
