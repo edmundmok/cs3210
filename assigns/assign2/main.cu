@@ -56,7 +56,7 @@ int main() {
   cudaMemcpy(hash, d_hash, sizeof(hash), cudaMemcpyDeviceToHost);
 
   // Print final output
-  printf("Target: %llu\n", target);
+  printf("Target: %" PRIu64 "\n", target);
   print_final_output(timestamp, nonce[0], hash);
 
   cudaFree(d_input); cudaFree(d_target); cudaFree(d_found);
@@ -66,7 +66,7 @@ int main() {
 }
 
 __device__ void print_nonce(uint64_t nonce) {
-  printf("%d\n", nonce);
+  printf("%" PRIu64 "\n", nonce);
 }
 
 __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,

@@ -1,6 +1,7 @@
 #ifndef ASSIGN2_UTILS_H
 #define ASSIGN2_UTILS_H
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,7 @@
 void print_digest_prefix(uint8_t hash[]) {
   printf("The first 8 bytes of the digest are: ");
   for (int i=0; i<8; i++) {
-    printf("%02x", hash[i]);
+    printf("%02" PRIx8, hash[i]);
   }
   printf("\n");
 }
@@ -40,12 +41,12 @@ void read_inputs(char prev_digest_hex_str[], uint64_t *target) {
   printf("Enter previous digest (256-bit hex):\n");
   scanf("%s", prev_digest_hex_str);
   printf("Enter target value (64-bit decimal):\n");
-  scanf("%llu", target);
+  scanf("%" SCNu64, target);
 }
 
 void print_complete_hash_input(uint8_t input[]) {
   for (int i=0; i<52; i++) {
-    printf("%02x", input[i]);
+    printf("%02" PRIx8, input[i]);
   }
   printf("\n");
 }
@@ -95,8 +96,8 @@ __device__ void fill_input_with_nonce(uint8_t input[], uint64_t nonce) {
 void print_final_output(uint32_t timestamp, uint64_t nonce, uint8_t hash[]) {
   printf("%s\n", NUSNET_ID);
   printf("%u\n", timestamp);
-  printf("%llu\n", nonce);
-  for (int i=0; i<32; i++) printf("%02x", hash[i]);
+  printf("%" PRIu64 "\n", nonce);
+  for (int i=0; i<32; i++) printf("%02" PRIx8, hash[i]);
   printf("\n");
 }
 
