@@ -1,6 +1,6 @@
-# 0123Homework
+0123Homework
 
-## Files
+* Files
 
 The current directory should contain the following files:
 1. This README
@@ -10,7 +10,7 @@ The current directory should contain the following files:
 5. hash.h
 6. hash.cu
 
-## Instructions
+* Instructions
 
 Use `make` to create the executable file called `0123Homework`.
 Either run `./0123Homework` and manually input the previous digest and nonce, or
