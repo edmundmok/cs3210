@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
 
@@ -8,11 +9,29 @@
 #include "hash.h"
 
 #define INPUT_SIZE 52
+#define DEFAULT_GRID_SIZE 8
+#define DEFAULT_BLOCK_SIZE 32
 
 __global__ void find_nonce_kernel(uint8_t *, uint64_t *target,
                                   int *, uint8_t *, uint64_t *);
 
-int main() {
+int main(int argc, char* argv[]) {
+
+  int grid_size = DEFAULT_GRID_SIZE, block_size = DEFAULT_BLOCK_SIZE;
+
+  if (argc == 1) {
+    printf("Using default grid size = %d and block size = %d.\n",
+           DEFAULT_GRID_SIZE, DEFAULT_BLOCK_SIZE);
+  } else if (argc == 3) {
+    grid_size = atoi(argv[1]);
+    block_size = atoi(argv[2]);
+    printf("Using grid size = %d and block size = %d.\n", grid_size, block_size);
+  } else {
+    printf("Usage: 0123Homework [grid size] [block size]\n");
+    printf("To use, either do not specify any arguments or specify both.\n");
+    printf("If no arguments are specified, default grid size = 8 and block size = 32 is used.\n");
+    exit(0);
+  }
 
   char prev_digest_hex_str[65];
   uint64_t target;
@@ -43,7 +62,7 @@ int main() {
   uint64_t nonce[1] = {0};
   cudaMalloc((void **) &d_nonce, sizeof(nonce));
 
-  find_nonce_kernel<<<2, 64>>>(d_input, d_target, d_found, d_hash, d_nonce);
+  find_nonce_kernel<<<grid_size, block_size>>>(d_input, d_target, d_found, d_hash, d_nonce);
 
   // Copy input back
   cudaMemcpy(input, d_input, sizeof(input), cudaMemcpyDeviceToHost);
@@ -55,7 +74,7 @@ int main() {
   cudaMemcpy(hash, d_hash, sizeof(hash), cudaMemcpyDeviceToHost);
 
   // Print final output
-  printf("Target: %" PRIu64 "\n", target);
+//  printf("Target: %" PRIu64 "\n", target);
   print_final_output(timestamp, nonce[0], hash);
 
   cudaFree(d_input); cudaFree(d_target); cudaFree(d_found);
@@ -94,7 +113,6 @@ __global__ void find_nonce_kernel(uint8_t *g_input, uint64_t *g_target,
 
   // Start finding nonce
   while (!*found) {
-//    print_nonce(nonce);
     fill_input_with_nonce(l_input, nonce);
     sha256(l_hash, l_input, 52);
 
