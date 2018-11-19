@@ -1,5 +1,5 @@
 # Source: https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
-OBJECTS = main.o hash.o
+OBJECTS = main.o hash.o utils.o
 TARGET = 0123Homework
 
 CC = nvcc
