@@ -5,9 +5,6 @@
 
 #include "utils.h"
 
-#define NUSNET_ID "E0002744"
-#define NONCE_IDX 44
-
 void print_digest_prefix(uint8_t hash[]) {
   printf("The first 8 bytes of the digest are: ");
   for (int i=0; i<8; i++) {
