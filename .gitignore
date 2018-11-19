@@ -59,3 +59,4 @@ dkms.conf
 *.d
 *.a
 *.DS_Store
+**/venv/
