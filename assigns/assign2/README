@@ -7,9 +7,20 @@ The current directory should contain the following files:
 2. Makefile
 3. main.cu
 4. utils.h
-5. hash.h
-6. hash.cu
-7. a2_report.pdf
+5. utils.cu
+6. hash.h
+7. hash.cu
+8. a2_report.pdf
+9. 1.in
+10. 1.out
+11. 2.in
+12. 2.out
+13. 3.in
+14. 3.out
+15. 4.in
+16. 4.out
+17. 5.in
+18. 5.out
 
 * Instructions
 
@@ -17,3 +28,10 @@ Use `make` to create the executable file called `0123Homework`.
 Either run `./0123Homework` and manually input the previous digest and nonce, or
 use input redirection (e.g. input in file called test.in) like ]
 `./0123Homework < test.in`.
+
+You may specify the grid and block size as command line arguments, i.e.
+`0123Homework [grid size] [block size]`. Either both sizes have to be specified,
+or none are specified and default values are used.
+
+NOTE: I also have some extra outputs before the requested output to confirm
+the grid and block size to be used for the kernel.
