@@ -9,6 +9,7 @@ The current directory should contain the following files:
 4. utils.h
 5. hash.h
 6. hash.cu
+7. a2_report.pdf
 
 * Instructions
 
@@ -16,15 +17,3 @@ Use `make` to create the executable file called `0123Homework`.
 Either run `./0123Homework` and manually input the previous digest and nonce, or
 use input redirection (e.g. input in file called test.in) like ]
 `./0123Homework < test.in`.
-
-
-nvprof: /usr/local/cuda/bin/nvprof ./0123Homework
-
-
-Data parallelism:
-- (Existing) Every thread tries to find a nonce and check digest against target,
- otherwise + total number of threads to try next nonce
-
-
-Task parallelism:
--

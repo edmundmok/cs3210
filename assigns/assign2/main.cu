@@ -14,8 +14,6 @@ __global__ void find_nonce_kernel(uint8_t *, uint64_t *target,
 
 int main() {
 
-  freopen("./test.in", "r", stdin);
-
   char prev_digest_hex_str[65];
   uint64_t target;
   read_inputs(prev_digest_hex_str, &target);
