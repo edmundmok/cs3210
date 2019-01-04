@@ -1,0 +1,17 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kt}{size\PYGZus{}t} \PYG{n}{total\PYGZus{}num\PYGZus{}threads} \PYG{o}{=} \PYG{n}{gridDim}\PYG{p}{.}\PYG{n}{x}
+\PYG{o}{*} \PYG{n}{gridDim}\PYG{p}{.}\PYG{n}{y} \PYG{o}{*} \PYG{n}{gridDim}\PYG{p}{.}\PYG{n}{z} \PYG{o}{*} \PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{x}
+\PYG{o}{*} \PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{y} \PYG{o}{*} \PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{z}\PYG{p}{;}
+
+\PYG{k+kt}{size\PYGZus{}t} \PYG{n}{block\PYGZus{}index\PYGZus{}in\PYGZus{}grid} \PYG{o}{=} \PYG{n}{blockIdx}\PYG{p}{.}\PYG{n}{x}
+\PYG{o}{*} \PYG{p}{(}\PYG{n}{gridDim}\PYG{p}{.}\PYG{n}{y} \PYG{o}{*} \PYG{n}{gridDim}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)} \PYG{o}{+} \PYG{n}{blockIdx}\PYG{p}{.}\PYG{n}{y}
+\PYG{o}{*} \PYG{p}{(}\PYG{n}{gridDim}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)} \PYG{o}{+} \PYG{n}{blockIdx}\PYG{p}{.}\PYG{n}{z}\PYG{p}{;}
+
+\PYG{k+kt}{size\PYGZus{}t} \PYG{n}{thread\PYGZus{}index\PYGZus{}in\PYGZus{}block} \PYG{o}{=}
+\PYG{n}{threadIdx}\PYG{p}{.}\PYG{n}{x} \PYG{o}{*} \PYG{p}{(}\PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{y} \PYG{o}{*} \PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)}
+\PYG{o}{+} \PYG{n}{threadIdx}\PYG{p}{.}\PYG{n}{y} \PYG{o}{*} \PYG{p}{(}\PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)} \PYG{o}{+} \PYG{n}{threadIdx}\PYG{p}{.}\PYG{n}{z}\PYG{p}{;}
+
+\PYG{k+kt}{size\PYGZus{}t} \PYG{n}{thread\PYGZus{}id} \PYG{o}{=} \PYG{n}{block\PYGZus{}index\PYGZus{}in\PYGZus{}grid}
+\PYG{o}{*} \PYG{p}{(}\PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{x} \PYG{o}{*} \PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{y} \PYG{o}{*} \PYG{n}{blockDim}\PYG{p}{.}\PYG{n}{z}\PYG{p}{)}
+\PYG{o}{+} \PYG{n}{thread\PYGZus{}index\PYGZus{}in\PYGZus{}block}\PYG{p}{;}
+\end{Verbatim}

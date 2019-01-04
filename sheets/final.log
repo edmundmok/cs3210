@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2017.4.15)  29 NOV 2018 07:15
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2017.4.15)  30 NOV 2018 22:09
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
-**mid.tex
-(./mid.tex
+**final.tex
+(./final.tex
 LaTeX2e <2016/03/31>
 Babel <3.9r> and hyphenation patterns for 83 language(s) loaded.
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/article.cls
@@ -157,11 +157,11 @@ Package pdftexcmds Info: \pdfdraftmode found.
 (/usr/local/texlive/2016/texmf-dist/tex/generic/oberdiek/catchfile.sty
 Package: catchfile 2016/05/16 v1.7 Catch the contents of a file (HO)
 )
-runsystem(uname -s > "mid.w18")...executed.
+runsystem(uname -s > "final.w18")...executed.
 
 
-(./mid.w18)
-runsystem(rm -- "mid.w18")...executed.
+(./final.w18)
+runsystem(rm -- "final.w18")...executed.
 
 )
 (/usr/local/texlive/2016/texmf-dist/tex/latex/etoolbox/etoolbox.sty
@@ -209,10 +209,10 @@ LaTeX Info: Redefining \\ on input line 3056.
 \@float@every@listing=\toks18
 \c@listing=\count115
 )
-runsystem(mkdir -p "_minted-mid")...executed.
+runsystem(mkdir -p "_minted-final")...executed.
 
 
-(./_minted-mid/default.pygstyle) (./_minted-mid/vs.pygstyle)
+(./_minted-final/default.pygstyle) (./_minted-final/vs.pygstyle)
 (/usr/local/texlive/2016/texmf-dist/tex/latex/enumitem/enumitem.sty
 Package: enumitem 2011/09/28 v3.5.2 Customized lists
 \labelindent=\skip48
@@ -425,17 +425,17 @@ File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
 \Gin@req@height=\dimen146
 \Gin@req@width=\dimen147
 )
-runsystem(which "pygmentize" && touch "mid.aex")...executed.
+runsystem(which "pygmentize" && touch "final.aex")...executed.
 
-runsystem(rm "mid.aex")...executed.
+runsystem(rm "final.aex")...executed.
 
 
 
 LaTeX Warning: Unused global option(s):
     [8pt].
 
-(./mid.aux)
-\openout1 = `mid.aux'.
+(./final.aux)
+\openout1 = `final.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 73.
 LaTeX Font Info:    ... okay on input line 73.
@@ -468,7 +468,7 @@ Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
 )
-(./_minted-mid/default-pyg-prefix.pygstyle)
+(./_minted-final/default-pyg-prefix.pygstyle)
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
 *geometry* verbose mode - [ preamble ] result:
@@ -517,9 +517,9 @@ LaTeX Info: Redefining \ref on input line 73.
 LaTeX Info: Redefining \pageref on input line 73.
 LaTeX Info: Redefining \nameref on input line 73.
 
-(./mid.out) (./mid.out)
+(./final.out) (./final.out)
 \@outlinefile=\write6
-\openout6 = `mid.out'.
+\openout6 = `final.out'.
 
 
 (/usr/local/texlive/2016/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
@@ -550,90 +550,172 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 95.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 107.
+
 
 (/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 95.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 107.
 
-<./prod-cons.png, id=196, 708.6475pt x 245.91875pt>
-File: ./prod-cons.png Graphic file (type png)
- <use ./prod-cons.png>
-Package pdftex.def Info: ./prod-cons.png used on input line 104.
-(pdftex.def)             Requested size: 212.59589pt x 73.77618pt.
-
-<./lightswitch.png, id=198, 398.48875pt x 425.59pt>
-File: ./lightswitch.png Graphic file (type png)
- <use ./lightswitch.png>
-Package pdftex.def Info: ./lightswitch.png used on input line 107.
-(pdftex.def)             Requested size: 119.54755pt x 127.67798pt.
-
-<./rwts.png, id=199, 864.22874pt x 206.7725pt>
-File: ./rwts.png Graphic file (type png)
- <use ./rwts.png>
-Package pdftex.def Info: ./rwts.png used on input line 110.
-(pdftex.def)             Requested size: 259.27061pt x 62.03223pt.
-
-Overfull \hbox (5.76558pt too wide) in paragraph at lines 110--111
-[]  
+Overfull \hbox (4.6215pt too wide) detected at line 191
+[][][]\OT1/cmr/m/n/8 (\OML/cmm/m/it/8 A\OT1/cmr/m/n/8 ) = \OML/cmm/m/it/8 N[]\O
+T1/cmr/m/n/8 (\OML/cmm/m/it/8 A\OT1/cmr/m/n/8 ) \OMS/cmsy/m/n/8 ^^B []\OT1/cmr/
+m/n/8 (\OML/cmm/m/it/8 A\OT1/cmr/m/n/8 ) \OMS/cmsy/m/n/8 ^^B [][]
  []
 
-<./rwprior.png, id=200, 841.1425pt x 202.7575pt>
-File: ./rwprior.png Graphic file (type png)
- <use ./rwprior.png>
-Package pdftex.def Info: ./rwprior.png used on input line 113.
-(pdftex.def)             Requested size: 252.3447pt x 60.82771pt.
 
-<./data_dep_graph.png, id=201, 616.3025pt x 351.3125pt>
-File: ./data_dep_graph.png Graphic file (type png)
+Overfull \hbox (4.74585pt too wide) detected at line 255
+[]\OML/cmm/m/it/8 MIPS\OT1/cmr/m/n/8 (\OML/cmm/m/it/8 A\OT1/cmr/m/n/8 ) = [] = 
+[]
+ []
 
-<use ./data_dep_graph.png>
-Package pdftex.def Info: ./data_dep_graph.png used on input line 222.
-(pdftex.def)             Requested size: 234.19737pt x 133.50012pt.
+<./metrics.png, id=245, 680.5425pt x 474.77374pt>
+File: ./metrics.png Graphic file (type png)
+ <use ./metrics.png>
+Package pdftex.def Info: ./metrics.png used on input line 355.
+(pdftex.def)             Requested size: 197.35226pt x 137.68085pt.
 
-Overfull \hbox (4.08112pt too wide) detected at line 293
-[][]
+Overfull \hbox (9.7235pt too wide) in paragraph at lines 355--356
+[][]  
  []
 
 [1
 
-{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./prod-
-cons.png> <./lightswitch.png> <./rwts.png> <./rwprior.png> <./data_dep_graph.pn
-g>] <./metrics.png, id=233, 680.5425pt x 474.77374pt>
-File: ./metrics.png Graphic file (type png)
- <use ./metrics.png>
-Package pdftex.def Info: ./metrics.png used on input line 444.
-(pdftex.def)             Requested size: 258.60883pt x 180.4159pt.
+{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+<./omega.png, id=293, 374.39874pt x 284.06125pt>
+File: ./omega.png Graphic file (type png)
+ <use ./omega.png>
+Package pdftex.def Info: ./omega.png used on input line 362.
+(pdftex.def)             Requested size: 74.87842pt x 56.81123pt.
 
-Overfull \hbox (5.10379pt too wide) in paragraph at lines 444--445
-[][]  
+<./butterfly.png, id=294, 384.43625pt x 309.155pt>
+File: ./butterfly.png Graphic file (type png)
+ <use ./butterfly.png>
+Package pdftex.def Info: ./butterfly.png used on input line 374.
+(pdftex.def)             Requested size: 76.88588pt x 61.8299pt.
+
+<./baseline.png, id=295, 371.3875pt x 315.1775pt>
+File: ./baseline.png Graphic file (type png)
+ <use ./baseline.png>
+Package pdftex.def Info: ./baseline.png used on input line 382.
+(pdftex.def)             Requested size: 74.27617pt x 63.03438pt.
+
+<./blockandcyclic.png, id=296, 377.41pt x 128.48pt>
+File: ./blockandcyclic.png Graphic file (type png)
+ <use ./blockandcyclic.png>
+Package pdftex.def Info: ./blockandcyclic.png used on input line 416.
+(pdftex.def)             Requested size: 188.70453pt x 64.23984pt.
+
+<./block-cyclic.png, id=297, 303.1325pt x 135.50626pt>
+File: ./block-cyclic.png Graphic file (type png)
+
+<use ./block-cyclic.png>
+Package pdftex.def Info: ./block-cyclic.png used on input line 417.
+(pdftex.def)             Requested size: 181.8809pt x 81.30437pt.
+
+Overfull \hbox (1.07576pt too wide) in paragraph at lines 416--418
+[] 
  []
 
+<./checkerboardblockandcyclic.png, id=298, 376.40625pt x 126.4725pt>
+File: ./checkerboardblockandcyclic.png Graphic file (type png)
+
+<use ./checkerboardblockandcyclic.png>
+Package pdftex.def Info: ./checkerboardblockandcyclic.png used on input line 41
+9.
+(pdftex.def)             Requested size: 188.20265pt x 63.23608pt.
+
+<./checkerboardblockcyclic.png, id=299, 300.12125pt x 123.46124pt>
+File: ./checkerboardblockcyclic.png Graphic file (type png)
+
+<use ./checkerboardblockcyclic.png>
+Package pdftex.def Info: ./checkerboardblockcyclic.png used on input line 420.
+(pdftex.def)             Requested size: 180.07413pt x 74.0773pt.
+
+Overfull \hbox (0.57388pt too wide) in paragraph at lines 419--421
+[] 
+ []
+
+<./gatherscatter.png, id=300, 389.455pt x 129.48375pt>
+File: ./gatherscatter.png Graphic file (type png)
+
+<use ./gatherscatter.png>
+Package pdftex.def Info: ./gatherscatter.png used on input line 426.
+(pdftex.def)             Requested size: 175.25313pt x 58.26714pt.
+
+<./singlebroadcast.png, id=301, 390.45876pt x 125.46875pt>
+File: ./singlebroadcast.png Graphic file (type png)
+
+<use ./singlebroadcast.png>
+Package pdftex.def Info: ./singlebroadcast.png used on input line 429.
+(pdftex.def)             Requested size: 175.7048pt x 56.4604pt.
+
+<./multibroadcast.png, id=302, 389.455pt x 122.4575pt>
+File: ./multibroadcast.png Graphic file (type png)
+
+<use ./multibroadcast.png>
+Package pdftex.def Info: ./multibroadcast.png used on input line 432.
+(pdftex.def)             Requested size: 175.25313pt x 55.10535pt.
+
+<./singleaccumulation.png, id=303, 389.455pt x 126.4725pt>
+File: ./singleaccumulation.png Graphic file (type png)
+
+<use ./singleaccumulation.png>
+Package pdftex.def Info: ./singleaccumulation.png used on input line 435.
+(pdftex.def)             Requested size: 175.25313pt x 56.9121pt.
+
+<./multiaccumulation.png, id=304, 390.45876pt x 122.4575pt>
+File: ./multiaccumulation.png Graphic file (type png)
+
+<use ./multiaccumulation.png>
+Package pdftex.def Info: ./multiaccumulation.png used on input line 438.
+(pdftex.def)             Requested size: 175.7048pt x 55.10535pt.
+
+<./totalexchange.png, id=305, 389.455pt x 123.46124pt>
+File: ./totalexchange.png Graphic file (type png)
+
+<use ./totalexchange.png>
+Package pdftex.def Info: ./totalexchange.png used on input line 441.
+(pdftex.def)             Requested size: 175.25313pt x 55.55704pt.
+
+<./specialisation.png, id=306, 368.37625pt x 238.8925pt>
+File: ./specialisation.png Graphic file (type png)
+
+<use ./specialisation.png>
+Package pdftex.def Info: ./specialisation.png used on input line 446.
+(pdftex.def)             Requested size: 165.76778pt x 107.50063pt.
+\openout3 = `final.pyg'.
+
+
+(./_minted-final/456880B24B65BEAFB614C0BE0CF942F971E52A0A7891AB34CAD51639DF9319
+53.pygtex)
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <7> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 514.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 490.
+ [2 <./metrics.png> <./omega.png> <./butterfly.png> <./baseline.png> <./blockan
+dcyclic.png> <./block-cyclic.png> <./checkerboardblockandcyclic.png> <./checker
+boardblockcyclic.png> <./gatherscatter.png> <./singlebroadcast.png> <./multibro
+adcast.png> <./singleaccumulation.png> <./multiaccumulation.png> <./totalexchan
+ge.png> <./specialisation.png>]
+runsystem(rm "final.pyg")...executed.
 
-Overfull \vbox (3.67908pt too high) has occurred while \output is active []
-
-
-[2 <./metrics.png>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 517.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 517.
- (./mid.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 517.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 517.
-Package rerunfilecheck Info: File `mid.out' has not changed.
-(rerunfilecheck)             Checksum: E6D6F5CCF1F5173C39357EF98396C593;3158.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 493.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 493.
+ (./final.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 493.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 493.
+Package rerunfilecheck Info: File `final.out' has not changed.
+(rerunfilecheck)             Checksum: F8F4E9446273E4C456BD5F21AC6C8879;3843.
  ) 
 Here is how much of TeX's memory you used:
- 9650 strings out of 493014
- 150717 string characters out of 6133351
- 360738 words of memory out of 5000000
- 12977 multiletter control sequences out of 15000+600000
- 8742 words of font info for 32 fonts, out of 8000000 for 9000
+ 9733 strings out of 493014
+ 152739 string characters out of 6133351
+ 322459 words of memory out of 5000000
+ 13034 multiletter control sequences out of 15000+600000
+ 8910 words of font info for 33 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,8n,35p,812b,486s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 37i,20n,35p,814b,482s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></
@@ -648,11 +730,12 @@ exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texl
 ive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/texliv
 e/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/
 2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/20
-16/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on mid.pdf (2 pages, 991383 bytes).
+16/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2016
+/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.pfb>
+Output written on final.pdf (2 pages, 1337123 bytes).
 PDF statistics:
- 330 PDF objects out of 1000 (max. 8388607)
- 296 compressed objects within 3 object streams
- 79 named destinations out of 1000 (max. 500000)
- 415 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 403 PDF objects out of 1000 (max. 8388607)
+ 349 compressed objects within 4 object streams
+ 91 named destinations out of 1000 (max. 500000)
+ 556 words of extra memory for PDF output out of 10000 (max. 10000000)
 
